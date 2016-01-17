@@ -1,7 +1,7 @@
 AcmeFetch
 =========
 Version: #VERSION#
-Date: #DATE$
+Date: #DATE#
 
 AcmeFetch is a thin wrapper arount he ACME::Protocol library to fetch and maintain
 ssl certificates using the the services of Let's Encrypt!
