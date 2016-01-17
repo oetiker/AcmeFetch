@@ -1,0 +1,245 @@
+#!/usr/bin/env perl
+
+use lib qw(); # PERL5LIB
+use FindBin;use lib "$FindBin::RealBin/../lib";use lib "$FindBin::RealBin/../thirdparty/lib/perl5"; # LIBDIR
+
+use Protocol::ACME;
+use Data::Processor;
+use Data::Processor::ValidatorFactory;
+use JSON;
+use Getopt::Long 2.25 qw(:config posix_default no_ignore_case);
+use Pod::Usage 1.14;
+
+# main loop
+sub main()
+{
+    # parse options
+    my %opt = ();
+    GetOptions(\%opt, 'help|h', 'man', 'version', 'noaction|no-action|n',
+        'verbose|v','cfg=s') or exit(1);
+    if($opt{help})     { pod2usage(1) }
+    if($opt{man})      { pod2usage(-exitstatus => 0, -verbose => 2) }
+    if($opt{version})  { print "template_tool $Revision\n"; exit(0) }
+    if($opt{noaction}) { die "ERROR: don't know how to \"no-action\".\n" }
+
+    my $cfg = loadCfg($opt{cfg} // $FindBin::RealBin.'/../etc/acmefetch.cfg');
+
+    print "yey the config is loaded\n";
+}
+
+main;
+
+# get a validator for our configuration file
+
+sub getDataProcessor {
+    my $vf = Data::Processor::ValidatorFactory->new;
+    my $string = $vf->rx('^.*$','expected a string');
+    my $integer = $vf->rx('^\d+$','expected an integer');
+    my $file = $vf->file();
+    my $schema = {
+        GENERAL => {
+            description => 'general settings',
+            members => {
+                opensslBin => {
+                    description => 'our openssl binary',
+                    optional => 1,
+                    default => 'openssl',
+                    validator => sub {
+                        my $bin = shift;
+                        `$bin gugus 2>&1` =~ /openssl:Error:/ or return "Openssl $bin not found";
+                        return "";
+                    }
+                },
+                ACMEservice => {
+                    description => 'host name of the ACME server to use',
+                }
+            },
+        },
+        CERTS => {
+            description => 'a list of certificates to keep up todate',
+            array => 1,
+            members => {
+                country => {
+                    description => 'country name',
+                    validator => $string,
+                },
+                organization => {
+                    description => 'organization name',
+                    validator => $string,
+                },
+                organizationUnit => {
+                    description => 'organization unit',
+                    validator => $string,
+                },
+                stateOrProvice => {
+                    description => 'state or provice',
+                    validator => $string,
+                },
+                locality => {
+                    description => 'locality',
+                    validator => $string,
+                },
+                certOutput => {
+                    description => 'cert output file',
+                    validator => $vf->file('>','cert file'),
+                },
+                keyOutput => {
+                    description => 'key output file',
+                    validator => $vf->file('>','key file')
+                },
+                SITES => {
+                    description => "Which websites to include in the certificate",
+                    members => {
+                        '\S+' => {
+                            regex => 1,
+                            members => {
+                                challengeHandler => {
+                                    description => 'challenge handler module',
+                                    validator => sub {
+                                        my $module = shift;
+                                        eval {
+                                            require 'Protocol/ACME/Challenge/'.$module.'.pm';
+                                        };
+                                        if ($@) {
+                                            return $@;
+                                        }
+                                        return '';
+                                    },
+                                },
+                                challengeConfig => {
+                                    description => 'config hash to pass on th the challenge handler',
+                                    validator => sub {
+                                        my $cfg = shift;
+                                        my $section = shift;
+                                        if (ref $cfg ne 'HASH'){
+                                            return "expected a HASH";
+                                        }
+                                        return '';
+                                    }
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    };
+    return Data::Processor->new($schema);
+};
+
+# load a json config file. Allowing # comments
+
+sub loadJSONCfg {
+    my $file = shift;
+    open my $fh, '<', $file or die "Opening $file: $!";
+    my $json = join '', <$fh>;
+    my $j = JSON->new;
+    $j->relaxed(1);
+    my $raw_cfg = eval { $j->decode($json) };
+    if ($@){
+        if ($@ =~ /(.+?) at line (\d+), offset (\d+)/){
+            my $warning = $1;
+            my $line = $2;
+            my $offset = $3;
+            open my $json, '<', $file;
+            my $c =0;
+            warn "Reading ".$file."\n";
+            warn "$warning\n\n";
+            while (<$json>){
+                chomp;
+                $c++;
+                if ($c == $line){
+                    warn ">-".('-' x $offset).'.'."  line $line\n";
+                    warn "  $_\n";
+                    warn ">-".('-' x $offset).'^'."\n";
+                }
+                elsif ($c+3 > $line and $c-3 < $line){
+                    warn "  $_\n";
+                }
+            }
+            warn "\n";
+            exit 1;
+        }
+        else {
+            die $@;
+        }
+    }
+    return $raw_cfg;
+}
+
+sub loadCfg {
+    my $file = shift;
+    my $cfg = loadJSONCfg($file);
+    my $err = getDataProcessor()->validate($cfg);
+    for my $cert (@{$cfg->{CERTS}}){
+        for my $site (sort keys %{$cert->{SITES}}){
+            eval {
+                $cert->{challenger} = eval {
+                    "Protocol::ACME::Challenge::$cert->{challengeHandler}"->new($cert->{challengeConfig});
+                }
+            };
+            if ($@){
+                die "Failed to load Challenge handler for $key";
+            }
+        }
+    }
+    for ($err->as_array){
+        warn "$_\n";
+        $hasErrors = 1;
+    }
+    die "Can't continue with config errors\n" if $hasErrors;
+    return $cfg;
+}
+
+__END__
+
+=head1 NAME
+
+acmefetch - generate Let's Encrypt! based certificates
+
+=head1 SYNOPSIS
+
+B<acmefetch> [I<options>...] {B<setup>|B<update>}
+
+     --man           show man-page and exit
+ -h, --help          display this help and exit
+     --version       output version information and exit
+     --noaction      talk don't act
+     --cfg=file      alternate config file (not ../etc/acmefetch.cfg)
+
+ setup  - generate a Let's Encrypt! account
+ update - update your keys according to the settings in the configuration file
+
+=head1 DESCRIPTION
+
+
+
+=head1 COPYRIGHT
+
+Copyright (c) 2015 by Tobias Oetiker. All rights reserved.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+
+=head1 HISTORY
+
+ 2006-XX-XX ds Initial Version
+
+=cut
