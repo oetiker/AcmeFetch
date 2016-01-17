@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS =  foreign
 
 MJ_SCRIPT = acmefetch
 
-SUBDIRS = thirdparty
+SUBDIRS = thirdparty etc
 
 BIN = bin/$(MJ_SCRIPT)
 

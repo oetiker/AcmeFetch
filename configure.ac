@@ -92,6 +92,7 @@ AC_SUBST(MISSING_PERL_MODULES)
 
 AC_CONFIG_FILES([
     Makefile
+    etc/Makefile
     thirdparty/Makefile
 ])
 
