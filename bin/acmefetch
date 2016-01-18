@@ -12,20 +12,21 @@ use Pod::Usage 1.14;
 use File::Temp;
 use Data::Dumper;
 
+my $VERSION = '0.dev';
+
 sub main()
 {
     # parse options
     my %opt = ();
-    GetOptions(\%opt, 'help|h', 'man', 'version', 'noaction|no-action|n',
-               'verbose|v','cfg=s', 'staging') or exit(1);
+    GetOptions(\%opt, 'help|h', 'man', 'version',
+               'cfg=s', 'staging') or exit(1);
     if($opt{help})     { pod2usage(1) }
     if($opt{man})      { pod2usage(-exitstatus => 0, -verbose => 2) }
-    if($opt{version})  { print "template_tool $Revision\n"; exit(0) }
-    if($opt{noaction}) { die "ERROR: don't know how to \"no-action\".\n" }
+    if($opt{version})  { print "acmefetch $VERSION\n"; exit(0) }
 
     my $cfg = loadCfg($opt{cfg} // $FindBin::RealBin.'/../etc/acmefetch.cfg');
 
-    $cfg->{GENERAL}->{host} = $opt{staging} ? $cfg->{GENERAL}->{ACMEstaging}
+    $cfg->{GENERAL}{host} = $opt{staging} ? $cfg->{GENERAL}->{ACMEstaging}
                                             : $cfg->{GENERAL}->{ACMEservice};
 
     getCertificates($cfg);
@@ -56,11 +57,14 @@ sub getDataProcessor {
                 ACMEstaging => {
                     description => 'host name of the ACME staging server to use',
                     validator => $string,
+                    default => 'acme-staging.api.letsencrypt.org',
                     optional => 1,
                 },
                 ACMEservice => {
                     description => 'host name of the ACME server to use',
+                    default => 'acme-v01.api.letsencrypt.org'
                     validator => $string,
+                    optional => 1,
                 },
                 accountKeyPath => {
                     description => 'your ACME account key (will get created when missing)',
@@ -274,24 +278,22 @@ acmefetch - generate ACME based certificates
 
 =head1 SYNOPSIS
 
-B<acmefetch> [I<options>...] {B<setup>|B<update>}
+B<acmefetch> [I<options>...]
 
      --man           show man-page and exit
  -h, --help          display this help and exit
      --version       output version information and exit
-     --noaction      talk don't act
      --cfg=file      alternate config file (not ../etc/acmefetch.cfg)
-
- setup  - generate a Let's Encrypt! account
- update - update your keys according to the settings in the configuration file
+     --staging       use the server specified in ACMEstaging
 
 =head1 DESCRIPTION
 
-
+Use the services of Let's Encrypt to generate SSL certificates.
+Use the F<acmefetch.cfg> file to specify what should be done.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2015 by Tobias Oetiker. All rights reserved.
+Copyright (c) 2016 by Tobias Oetiker. All rights reserved.
 
 =head1 LICENSE
 
