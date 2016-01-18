@@ -1,4 +1,11 @@
-2016-01-18 17:36:46 +0100  (HEAD, tag: v0.1.0, origin/master, master)  first certificate generated -- Tobias Oetiker
+2016-01-18 19:00:17 +0100  (HEAD, tag: v0.1.1, origin/master, master)  v0.1.1 -- Tobias Oetiker
+2016-01-18 18:59:36 +0100   make it work for just one site -- Tobias Oetiker
+2016-01-18 09:33:51 -0800   Adding mkdir for $(libdir) in Makefile.am -- Stephen Ludin
+2016-01-18 18:53:12 +0100   irnore README -- Tobias Oetiker
+2016-01-18 18:52:48 +0100   fix readme -- Tobias Oetiker
+2016-01-18 17:45:08 +0100  (tag: v0.1.0)  ignore archives -- Tobias Oetiker
+2016-01-18 17:44:47 +0100   missing files added -- Tobias Oetiker
+2016-01-18 17:36:46 +0100   first certificate generated -- Tobias Oetiker
 2016-01-17 18:16:04 +0100   fix syntax -- Tobias Oetiker
 2016-01-17 18:15:05 +0100   install config file via make -- Tobias Oetiker
 2016-01-17 18:00:52 +0100   initial -- Tobias Oetiker

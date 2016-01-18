@@ -10,5 +10,6 @@ autom4te.cache
 config.log
 config.status
 thirdparty
+README
 !thirdparty/Makefile.am
 !thirdparty/Makefile.in
