@@ -80,26 +80,26 @@ body {
 }
 
 .thumbnail.feature:hover .icon, .thumbnail.feature:active .icon {
-   color: #9aafff;
-   text-shadow: 0px 0px 5px #9aafff;   
+   color: #66FF00;
+   text-shadow: 0px 0px 5px #66FF00;   
 }
 
 @media (min-width: 750px) {
     .thumbnail.feature {
-        min-height: 390px;
+        min-height: 300px;
     }
 }
 
 @media (min-width: 992px) {
     .thumbnail.feature {
-        min-height: 490px;
+        min-height: 300px;
     }
 }
 
 .thumbnail.feature .icon {
     font-size: 400%;
     text-align: center;
-    color: #87a0fe;
+    color: #49B700;
     margin-top: 0.6ex;
     margin-bottom: -0.5ex;
 } 
