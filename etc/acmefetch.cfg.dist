@@ -1,5 +1,6 @@
 {
     "GENERAL": {
+        "ACMEstaging": "acme-staging.api.letsencrypt.org",
         "ACMEservice": "acme-v01.api.letsencrypt.org",
         "accountKeyPath": "/tmp/accountKey.pem"
     },
