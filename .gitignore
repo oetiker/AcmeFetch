@@ -3,6 +3,7 @@ Makefile
 .DS_Store
 *.rej
 *.orig
+*.tar.gz
 etc/acmefetch.cfg
 aclocal.m4
 autom4te.cache
