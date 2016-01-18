@@ -17,13 +17,17 @@ sub main()
     # parse options
     my %opt = ();
     GetOptions(\%opt, 'help|h', 'man', 'version', 'noaction|no-action|n',
-        'verbose|v','cfg=s') or exit(1);
+               'verbose|v','cfg=s', 'staging') or exit(1);
     if($opt{help})     { pod2usage(1) }
     if($opt{man})      { pod2usage(-exitstatus => 0, -verbose => 2) }
     if($opt{version})  { print "template_tool $Revision\n"; exit(0) }
     if($opt{noaction}) { die "ERROR: don't know how to \"no-action\".\n" }
 
     my $cfg = loadCfg($opt{cfg} // $FindBin::RealBin.'/../etc/acmefetch.cfg');
+
+    $cfg->{GENERAL}->{host} = $opt{staging} ? $cfg->{GENERAL}->{ACMEstaging}
+                                            : $cfg->{GENERAL}->{ACMEservice};
+
     getCertificates($cfg);
 }
 
@@ -48,6 +52,11 @@ sub getDataProcessor {
                         `$bin version 2>&1` =~ /^OpenSSL 1.0/ or return "Openssl $bin not found";
                         return "";
                     }
+                },
+                ACMEstaging => {
+                    description => 'host name of the ACME staging server to use',
+                    validator => $string,
+                    optional => 1,
                 },
                 ACMEservice => {
                     description => 'host name of the ACME server to use',
@@ -264,7 +273,7 @@ sub getCertificates {
     my $openssl = $cfg->{GENERAL}{opensslBin};
     for my $cert (@{$cfg->{CERTS}}){
         my $acme = Protocol::ACME->new(
-            host => $cfg->{GENERAL}{ACMEservice},
+            host => $cfg->{GENERAL}{host},
             account_key_path => getAccountKey($cfg),
             account_key_format => 'PEM',
             openssl => $cfg->{GENERAL}{opensslBin}
