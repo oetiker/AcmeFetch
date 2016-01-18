@@ -205,7 +205,7 @@ sub makeCsr {
     my $cfg = shift;
     my $cert = shift;
     my $openssl = $cfg->{GENERAL}{opensslBin};
-    $cert->{altNames} = join ',', map {"DNS:$_"} grep {$_ ne $cert->{commonName}} sort keys %{$cert->{SITES}};
+    $cert->{altNames} = join ',', map {"DNS:$_"} sort keys %{$cert->{SITES}};
     my $cfgFh = File::Temp->new(UNLINK => 0,SUFFIX => '.cfg');
 
     my $csr = <<'CSRcfg_END';
