@@ -81,7 +81,7 @@ POST_UNINSTALL = :
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(dist_bin_SCRIPTS) README conftools/install-sh \
+	$(dist_bin_SCRIPTS) AUTHORS README conftools/install-sh \
 	conftools/missing $(top_srcdir)/conftools/install-sh \
 	$(top_srcdir)/conftools/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -308,7 +308,7 @@ MJ_SCRIPT = acmefetch
 SUBDIRS = thirdparty etc
 BIN = bin/$(MJ_SCRIPT)
 THIRDPARTY_DIR := $(shell pwd)/thirdparty
-EXTRA_DIST = VERSION PERL_MODULES COPYRIGHT LICENSE CHANGES AUTHORS bootstrap $(BIN) 
+EXTRA_DIST = VERSION PERL_MODULES COPYRIGHT LICENSE CHANGES AUTHORS bootstrap README.md $(BIN)
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 dist_bin_SCRIPTS = $(BIN)
@@ -814,8 +814,11 @@ uninstall-am: uninstall-dist_binSCRIPTS
 CHANGES: VERSION
 	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
 
+README: README.md
+	cp README.md README
+
 dist-hook: thirdparty/CPAN/touch
-	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README $(distdir)/COPYRIGHT
+	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README.md $(distdir)/COPYRIGHT
 
 install-exec-hook:
 	[ "$(PERL5LIB)" == "" ] || cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
