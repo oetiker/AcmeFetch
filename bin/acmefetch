@@ -6,11 +6,12 @@ use FindBin;use lib "$FindBin::RealBin/../lib";use lib "$FindBin::RealBin/../thi
 use Protocol::ACME;
 use Data::Processor;
 use Data::Processor::ValidatorFactory;
-use JSON;
+use JSON::PP;
 use Getopt::Long 2.25 qw(:config posix_default no_ignore_case);
 use Pod::Usage 1.14;
+use File::Temp;
+use Data::Dumper;
 
-# main loop
 sub main()
 {
     # parse options
@@ -23,8 +24,7 @@ sub main()
     if($opt{noaction}) { die "ERROR: don't know how to \"no-action\".\n" }
 
     my $cfg = loadCfg($opt{cfg} // $FindBin::RealBin.'/../etc/acmefetch.cfg');
-
-    print "yey the config is loaded\n";
+    getCertificates($cfg);
 }
 
 main;
@@ -35,7 +35,6 @@ sub getDataProcessor {
     my $vf = Data::Processor::ValidatorFactory->new;
     my $string = $vf->rx('^.*$','expected a string');
     my $integer = $vf->rx('^\d+$','expected an integer');
-    my $file = $vf->file();
     my $schema = {
         GENERAL => {
             description => 'general settings',
@@ -46,12 +45,17 @@ sub getDataProcessor {
                     default => 'openssl',
                     validator => sub {
                         my $bin = shift;
-                        `$bin gugus 2>&1` =~ /openssl:Error:/ or return "Openssl $bin not found";
+                        `$bin version 2>&1` =~ /^OpenSSL 1.0/ or return "Openssl $bin not found";
                         return "";
                     }
                 },
                 ACMEservice => {
                     description => 'host name of the ACME server to use',
+                    validator => $string,
+                },
+                accountKeyPath => {
+                    description => 'your ACME account key (will get created when missing)',
+                    validator => $vf->file('>>','account key path'),
                 }
             },
         },
@@ -81,11 +85,15 @@ sub getDataProcessor {
                 },
                 certOutput => {
                     description => 'cert output file',
-                    validator => $vf->file('>','cert file'),
+                    validator => $vf->file('>>','cert file'),
                 },
                 keyOutput => {
                     description => 'key output file',
-                    validator => $vf->file('>','key file')
+                    validator => $vf->file('>>','key file')
+                },
+                commonName => {
+                    description => 'designate the common name in the certificate. the other sites will be listed as subjectAltName entries.',
+                    validator => $string,
                 },
                 SITES => {
                     description => "Which websites to include in the certificate",
@@ -133,7 +141,7 @@ sub loadJSONCfg {
     my $file = shift;
     open my $fh, '<', $file or die "Opening $file: $!";
     my $json = join '', <$fh>;
-    my $j = JSON->new;
+    my $j = JSON::PP->new;
     $j->relaxed(1);
     my $raw_cfg = eval { $j->decode($json) };
     if ($@){
@@ -172,14 +180,16 @@ sub loadCfg {
     my $cfg = loadJSONCfg($file);
     my $err = getDataProcessor()->validate($cfg);
     for my $cert (@{$cfg->{CERTS}}){
+        if (not exists $cert->{SITES}{$cert->{commonName}} ){
+            die "commonName ($cert->{commonName}) has no matching site entry.\n"
+        }
         for my $site (sort keys %{$cert->{SITES}}){
-            eval {
-                $cert->{challenger} = eval {
-                    "Protocol::ACME::Challenge::$cert->{challengeHandler}"->new($cert->{challengeConfig});
-                }
+            my $sp = $cert->{SITES}{$site};
+            $sp->{challengeObj} = eval {
+                "Protocol::ACME::Challenge::$sp->{challengeHandler}"->new($sp->{challengeConfig});
             };
             if ($@){
-                die "Failed to load Challenge handler for $key";
+                die "Failed to instanciate Challenge handler for $key ($@)\n";
             }
         }
     }
@@ -191,11 +201,97 @@ sub loadCfg {
     return $cfg;
 }
 
+sub makeCsr {
+    my $cfg = shift;
+    my $cert = shift;
+    my $openssl = $cfg->{GENERAL}{opensslBin};
+    $cert->{altNames} = join ',', map {"DNS:$_"} grep {$_ ne $cert->{commonName}} sort keys %{$cert->{SITES}};
+    my $cfgFh = File::Temp->new(UNLINK => 0,SUFFIX => '.cfg');
+
+    my $csr = <<'CSRcfg_END';
+[ req ]
+default_bits              = 2048
+distinguished_name        = req_distinguished_name
+req_extensions            = req_ext
+
+[ req_distinguished_name ]
+countryName               = Country Name (2 letter code)
+countryName_default       = $C{country}
+organizationName          = Company
+organizationName_default  = $C{organization}
+organizationalUnitName    = Department
+organizationalUnitName_default = $C{organizationalUnit}
+stateOrProvinceName       = State
+stateOrProvinceName_default = $C{stateOrProvince}
+localityName              = Town
+localityName_default      = $C{localityName}
+commonName                = fqn Hostname
+commonName_default        = $C{commonName}
+commonName_max            = 64
+
+[ req_ext ]
+subjectAltName            = @alt_names
+
+[SAN]
+subjectAltName            = $C{altNames}
+CSRcfg_END
+    $csr =~ s/\$C\{(.+?)}/$cert->{$1}/g;
+    print $cfgFh $csr;
+    $cfgFh->flush();
+    print "$cfgFh";
+    my $csrFh = File::Temp->new( UNLINK => 0,SUFFIX => '.csr');
+    system $openssl,qw(req -nodes -newkey rsa:2048 -batch -reqexts SAN -outform der),
+        -keyout => $cert->{keyOutput},
+        -out  => $csrFh->filename(),
+        -config => $cfgFh->filename();
+    say $cfgFh;
+    unlink $cfgFh->filename();
+    return $csrFh->filename();
+}
+
+sub getAccountKey {
+    my $cfg = shift;
+    my $openssl = $cfg->{GENERAL}{opensslBin};
+    my $key = $cfg->{GENERAL}{accountKeyPath};
+    if (not -e $key or -z $key){
+        system $openssl, 'genrsa', -out => $key, 2048;
+    }
+    return $key;
+}
+
+sub getCertificates {
+    my $cfg = shift;
+    my $openssl = $cfg->{GENERAL}{opensslBin};
+    for my $cert (@{$cfg->{CERTS}}){
+        my $acme = Protocol::ACME->new(
+            host => $cfg->{GENERAL}{ACMEservice},
+            account_key_path => getAccountKey($cfg),
+            account_key_format => 'PEM',
+            openssl => $cfg->{GENERAL}{opensslBin}
+        );
+        $acme->directory();
+        $acme->register();
+        $acme->accept_tos();
+        for my $domain (sort keys %{$cert->{SITES}}){
+            $acme->authz( $domain );
+            $acme->handle_challenge( $cert->{SITES}{$domain}{challengeObj} );
+            $acme->check_challenge();
+        }
+        my $csrFile = makeCsr($cfg,$cert);
+        my $certData = $acme->sign( $csrFile );
+        $certFile = $cert->{certOutput};
+        my $fh = IO::File->new( $certFile, "w" )
+            || die "Write $certFile: $!";
+        print $fh $certData;
+        $fh->close();
+    }
+}
+
 __END__
 
 =head1 NAME
 
-acmefetch - generate Let's Encrypt! based certificates
+acmefetch - generate ACME based certificates
 
 =head1 SYNOPSIS
 

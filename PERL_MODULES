@@ -1,4 +1,5 @@
 Protocol::ACME
 Data::Processor
-JSON
 Pod::Usage
+Crypt::PK::ECC
+Digest::SHA2

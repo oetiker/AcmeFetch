@@ -1,6 +1,7 @@
 {
     "GENERAL": {
         "ACMEservice": "acme-v01.api.letsencrypt.org",
+        "accountKeyPath": "/tmp/accountKey.pem"
     },
     "CERTS": [
         {
@@ -11,6 +12,7 @@
             "locality": "Olten",
             "certOutput": "/tmp/testCert.pem",
             "keyOutput": "/tmp/testCert.key",
+            "commonName": "my.web.domain",
             "SITES": {
                 "my.web.domain": {
                     "challengeHandler": "SimpleSSH",
