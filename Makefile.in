@@ -811,6 +811,9 @@ uninstall-am: uninstall-dist_binSCRIPTS
 	uninstall-dist_binSCRIPTS
 
 
+CHANGES: VERSION
+	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
+
 dist-hook: thirdparty/CPAN/touch
 	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README $(distdir)/COPYRIGHT
 

@@ -12,6 +12,9 @@ THIRDPARTY_DIR := $(shell pwd)/thirdparty
 
 EXTRA_DIST = VERSION PERL_MODULES COPYRIGHT LICENSE CHANGES AUTHORS bootstrap $(BIN) 
 
+CHANGES: VERSION
+	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
+
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 
