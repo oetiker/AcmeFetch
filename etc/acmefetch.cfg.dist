@@ -5,11 +5,6 @@
     },
     "CERTS": [
         {
-            "country": "CH",
-            "organization": "Big Company",
-            "organizationUnit": "IT-Services",
-            "stateOrProvice": "Solothurn",
-            "locality": "Olten",
             "certOutput": "/tmp/testCert.pem",
             "keyOutput": "/tmp/testCert.key",
             "commonName": "my.web.domain",

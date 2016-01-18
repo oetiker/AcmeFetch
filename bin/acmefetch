@@ -63,26 +63,6 @@ sub getDataProcessor {
             description => 'a list of certificates to keep up todate',
             array => 1,
             members => {
-                country => {
-                    description => 'country name',
-                    validator => $string,
-                },
-                organization => {
-                    description => 'organization name',
-                    validator => $string,
-                },
-                organizationUnit => {
-                    description => 'organization unit',
-                    validator => $string,
-                },
-                stateOrProvice => {
-                    description => 'state or provice',
-                    validator => $string,
-                },
-                locality => {
-                    description => 'locality',
-                    validator => $string,
-                },
                 certOutput => {
                     description => 'cert output file',
                     validator => $vf->file('>>','cert file'),
@@ -215,16 +195,6 @@ distinguished_name        = req_distinguished_name
 req_extensions            = req_ext
 
 [ req_distinguished_name ]
-countryName               = Country Name (2 letter code)
-countryName_default       = $C{country}
-organizationName          = Company
-organizationName_default  = $C{organization}
-organizationalUnitName    = Department
-organizationalUnitName_default = $C{organizationalUnit}
-stateOrProvinceName       = State
-stateOrProvinceName_default = $C{stateOrProvince}
-localityName              = Town
-localityName_default      = $C{localityName}
 commonName                = fqn Hostname
 commonName_default        = $C{commonName}
 commonName_max            = 64
