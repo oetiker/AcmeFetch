@@ -1,4 +1,8 @@
-2016-01-18 19:00:17 +0100  (HEAD, tag: v0.1.1, origin/master, master)  v0.1.1 -- Tobias Oetiker
+2016-01-18 21:21:34 +0100  (HEAD, master)  some extra cleanup -- Tobias Oetiker
+2016-01-18 10:34:00 -0800   Adding staging option -- Stephen Ludin
+2016-01-18 21:08:17 +0100   do not specify unnecesasry attributes -- Tobias Oetiker
+2016-01-18 19:06:08 +0100   better docs -- Tobias Oetiker
+2016-01-18 19:00:17 +0100  (tag: v0.1.1)  v0.1.1 -- Tobias Oetiker
 2016-01-18 18:59:36 +0100   make it work for just one site -- Tobias Oetiker
 2016-01-18 09:33:51 -0800   Adding mkdir for $(libdir) in Makefile.am -- Stephen Ludin
 2016-01-18 18:53:12 +0100   irnore README -- Tobias Oetiker
