@@ -5,7 +5,7 @@ language: perl
 git:
   depth: 3
   
-env:
+perl:
   - 5.20
   - 5.18
   - 5.16
