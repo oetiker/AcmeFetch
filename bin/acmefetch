@@ -62,7 +62,7 @@ sub getDataProcessor {
                 },
                 ACMEservice => {
                     description => 'host name of the ACME server to use',
-                    default => 'acme-v01.api.letsencrypt.org'
+                    default => 'acme-v01.api.letsencrypt.org',
                     validator => $string,
                     optional => 1,
                 },
