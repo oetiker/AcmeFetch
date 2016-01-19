@@ -17,3 +17,4 @@ script:
   - make install
   - cd $HOME/acmefetch/bin  
   - ./acmefetch --help
+
