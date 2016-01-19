@@ -15,7 +15,8 @@ perl:
 
 # disable cpanm
 
-before_install: ture
+before_install: true
+
 install: true
 
 before_script:
