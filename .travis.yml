@@ -14,7 +14,7 @@ env:
   - PERLVERS=5.10
 
 before_script:
-  - perlbrew install perl-$PERLVERS
+  - perlbrew use $PERLVERS
   - ./bootstrap
 
 script:
