@@ -1,5 +1,7 @@
 sudo: false
 
+language: c
+
 perl:
   - "5.20"
   - "5.18"
