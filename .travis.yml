@@ -1,6 +1,6 @@
 sudo: false
 
-language: c
+language: perl
 
 perl:
   - "5.20"
