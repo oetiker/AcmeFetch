@@ -1,6 +1,8 @@
 AcmeFetch
 =========
 
+[![Build Status](https://travis-ci.org/oetiker/AcmeFetch.svg?branch=master)](https://travis-ci.org/oetiker/AcmeFetch)
+
 Version: #VERSION#
 
 Date: #DATE#

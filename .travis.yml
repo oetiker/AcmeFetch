@@ -12,6 +12,14 @@ before_script:
   - ./bootstrap
 
 script:
+  - ./configure
+  - make
+  - make dist
+  - mkdir ~/src
+  - cp acmefetch*.tar.gz ~/src
+  - cd ~/src
+  - tar xvf acme*gz
+  - cd acme*/
   - ./configure --prefix=$HOME/acmefetch
   - make
   - make install
