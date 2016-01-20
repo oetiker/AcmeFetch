@@ -1,4 +1,20 @@
-2016-01-18 21:21:34 +0100  (HEAD, master)  some extra cleanup -- Tobias Oetiker
+2016-01-19 09:26:56 +0100  (HEAD, origin/master, master)  added missing quotes -- Tobias Oetiker
+2016-01-19 09:25:57 +0100   spelling is important :-) -- Tobias Oetiker
+2016-01-19 09:25:09 +0100   not env, PERL -- Tobias Oetiker
+2016-01-19 09:24:14 +0100   still trying to get travis to check all perl version -- Tobias Oetiker
+2016-01-19 09:22:49 +0100   fix perlbrew call -- Tobias Oetiker
+2016-01-19 09:21:10 +0100   try directing perlbrew -- Tobias Oetiker
+2016-01-19 09:08:04 +0100   no cpan stuff -- Tobias Oetiker
+2016-01-19 09:04:11 +0100   can we build on different perls? -- Tobias Oetiker
+2016-01-19 09:00:13 +0100   even simpler test -- Tobias Oetiker
+2016-01-19 08:57:43 +0100   switch to c infrastructure -- Tobias Oetiker
+2016-01-19 08:56:43 +0100   fix syntax regression -- Tobias Oetiker
+2016-01-19 08:54:18 +0100   complete build cycle -- Tobias Oetiker
+2016-01-19 08:50:40 +0100   go travis -- Tobias Oetiker
+2016-01-19 08:46:30 +0100   lets have some testing -- Tobias Oetiker
+2016-01-19 08:39:54 +0100   remove Protocol::ACME dependencies ... -- Tobias Oetiker
+2016-01-18 21:23:50 +0100  (tag: v0.2.0)  release 0.2.0 -- Tobias Oetiker
+2016-01-18 21:21:34 +0100   some extra cleanup -- Tobias Oetiker
 2016-01-18 10:34:00 -0800   Adding staging option -- Stephen Ludin
 2016-01-18 21:08:17 +0100   do not specify unnecesasry attributes -- Tobias Oetiker
 2016-01-18 19:06:08 +0100   better docs -- Tobias Oetiker
