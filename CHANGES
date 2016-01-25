@@ -1,4 +1,6 @@
-2016-01-25 11:25:29 +0100  (HEAD, tag: v0.3.0, origin/master, master)  * only renew certificates that are expired OR do not contain all subject alternativ names * make this work with the 0.09 api -- Tobias Oetiker
+2016-01-25 17:58:40 +0100  (HEAD, tag: v0.3.1, origin/master, master)  * make 'on demand' rebuild work * add ssl dependency -- Tobias Oetiker
+2016-01-25 11:27:46 +0100  (tag: v0.3.0)  fix sample config -- Tobias Oetiker
+2016-01-25 11:25:29 +0100   * only renew certificates that are expired OR do not contain all subject alternativ names * make this work with the 0.09 api -- Tobias Oetiker
 2016-01-25 08:21:38 +0100  (tag: v0.2.2)  release 0.2.2 -- Tobias Oetiker
 2016-01-25 08:19:23 +0100   add JSON::PP as a dependency, just to be sure it gets built (#6) -- Tobias Oetiker
 2016-01-20 11:21:06 +0100  (tag: v0.2.1)  re-realease for 0.09 -- Tobias Oetiker

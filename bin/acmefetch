@@ -14,7 +14,8 @@ use Data::Dumper;
 use Crypt::OpenSSL::X509;
 
 
-my $VERSION = '0.dev';
+my $VERSION = '0.dev'; # VERSION
+
 # parse options
 my %opt = ();
 sub main()
