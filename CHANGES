@@ -1,4 +1,6 @@
-2016-01-19 09:26:56 +0100  (HEAD, origin/master, master)  added missing quotes -- Tobias Oetiker
+2016-01-25 08:19:23 +0100  (HEAD, tag: v0.2.2, origin/master, master)  add JSON::PP as a dependency, just to be sure it gets built (#6) -- Tobias Oetiker
+2016-01-20 11:21:06 +0100  (tag: v0.2.1)  re-realease for 0.09 -- Tobias Oetiker
+2016-01-19 09:26:56 +0100   added missing quotes -- Tobias Oetiker
 2016-01-19 09:25:57 +0100   spelling is important :-) -- Tobias Oetiker
 2016-01-19 09:25:09 +0100   not env, PERL -- Tobias Oetiker
 2016-01-19 09:24:14 +0100   still trying to get travis to check all perl version -- Tobias Oetiker
