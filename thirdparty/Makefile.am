@@ -25,5 +25,5 @@ CPAN/touch: ../PERL_MODULES
 	$(AM_V_GEN)gunzip -c CPAN/modules/02packages.details.txt.gz | perl -pe 's{^(DBI\s+)undef(\s+\S+/DBI-)(\d+\.\d+)(\.tar)}{$$1$$3$$2$$3$$4}' |  gzip | cat > x.gz && mv x.gz CPAN/modules/02packages.details.txt.gz
 	$(AM_V_GEN)touch CPAN/touch
 
-clean-hook:
-	rm touch CPAN/touch
+clean-local:
+	ls -1 | grep -v Makefile. | xargs rm -rf

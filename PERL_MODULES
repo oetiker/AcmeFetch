@@ -1,4 +1,5 @@
 Protocol::ACME
 Data::Processor
 Pod::Usage
-JSON::PP
+JSON
+Crypt::OpenSSL::X509

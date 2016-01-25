@@ -2,24 +2,26 @@
 
 use lib qw(); # PERL5LIB
 use FindBin;use lib "$FindBin::RealBin/../lib";use lib "$FindBin::RealBin/../thirdparty/lib/perl5"; # LIBDIR
-
+# use lib qw(/home/oetiker/checkouts/Protocol-ACME/lib);
 use Protocol::ACME;
 use Data::Processor;
 use Data::Processor::ValidatorFactory;
-use JSON::PP;
+use JSON;
 use Getopt::Long 2.25 qw(:config posix_default no_ignore_case);
 use Pod::Usage 1.14;
 use File::Temp;
 use Data::Dumper;
+use Crypt::OpenSSL::X509;
+
 
 my $VERSION = '0.dev';
-
+# parse options
+my %opt = ();
 sub main()
 {
-    # parse options
-    my %opt = ();
-    GetOptions(\%opt, 'help|h', 'man', 'version',
-               'cfg=s', 'staging') or exit(1);
+
+    GetOptions(\%opt, 'help|h', 'man', 'version','force',
+               'cfg=s', 'staging','verbose') or exit(1);
     if($opt{help})     { pod2usage(1) }
     if($opt{man})      { pod2usage(-exitstatus => 0, -verbose => 2) }
     if($opt{version})  { print "acmefetch $VERSION\n"; exit(0) }
@@ -80,6 +82,10 @@ sub getDataProcessor {
                     description => 'cert output file',
                     validator => $vf->file('>>','cert file'),
                 },
+                certFormat => {
+                    description => 'PEM or ASN1 output format for the cert',
+                    validator => $vf->rx('^(ASN1|PEM)','Pick ASN1 or PEM'),
+                },
                 keyOutput => {
                     description => 'key output file',
                     validator => $vf->file('>>','key file')
@@ -134,7 +140,7 @@ sub loadJSONCfg {
     my $file = shift;
     open my $fh, '<', $file or die "Opening $file: $!";
     my $json = join '', <$fh>;
-    my $j = JSON::PP->new;
+    my $j = JSON->new;
     $j->relaxed(1);
     my $raw_cfg = eval { $j->decode($json) };
     if ($@){
@@ -176,6 +182,11 @@ sub loadCfg {
         if (not exists $cert->{SITES}{$cert->{commonName}} ){
             die "commonName ($cert->{commonName}) has no matching site entry.\n"
         }
+        $cert->{certFormat} = {
+            DER => Crypt::OpenSSL::X509::FORMAT_ASN1,
+            PEM => Crypt::OpenSSL::X509::FORMAT_PEM,
+        }->{$cert->{certFormat}};
+
         for my $site (sort keys %{$cert->{SITES}}){
             my $sp = $cert->{SITES}{$site};
             $sp->{challengeObj} = eval {
@@ -187,7 +198,7 @@ sub loadCfg {
         }
     }
     for ($err->as_array){
-        warn "$_\n";
+        warn "Config ERROR: $_\n";
         $hasErrors = 1;
     }
     die "Can't continue with config errors\n" if $hasErrors;
@@ -246,11 +257,16 @@ sub getCertificates {
     my $cfg = shift;
     my $openssl = $cfg->{GENERAL}{opensslBin};
     for my $cert (@{$cfg->{CERTS}}){
+        next if not $opt{force} and not checkCert($cert->{certOutput},$cert->{SITES});
         my $acme = Protocol::ACME->new(
             host => $cfg->{GENERAL}{host},
-            account_key_path => getAccountKey($cfg),
-            account_key_format => 'PEM',
-            openssl => $cfg->{GENERAL}{opensslBin}
+            account_key => {
+                filename => getAccountKey($cfg),
+                format => 'PEM',
+            },
+            openssl => $cfg->{GENERAL}{opensslBin},
+            loglevel => ($opt{verbose} ? 'debug': 'error'),
+            debug => $opt{verbose},
         );
         $acme->directory();
         $acme->register();
@@ -261,13 +277,39 @@ sub getCertificates {
             $acme->check_challenge();
         }
         my $csrFile = makeCsr($cfg,$cert);
-        my $certData = $acme->sign( $csrFile );
+        my $certData = Crypt::OpenSSL::X509->new_from_string(
+            $acme->sign( $csrFile ),Crypt::OpenSSL::X509::FORMAT_ASN1
+        )->as_string($cert->{certFormat});
         $certFile = $cert->{certOutput};
         my $fh = IO::File->new( $certFile, "w" )
             || die "Write $certFile: $!";
         print $fh $certData;
         $fh->close();
     }
+}
+
+# check if a certificat covers the indicated domains and will NOT expire within the next 30 days
+
+sub checkCert {
+    my $file = shift;
+    my $domains = shift;
+    return 0 if not -r $file or -z $file;
+    my $x509 = Crypt::OpenSSL::X509->new_from_file($file,$cert->{certFormat});
+    my %dns;
+    $x509->subject() =~ m{CN=([^,/\s]+)} and $dns{$1} = 1;
+    map { /DNS:([^\s]+)/ and $dns{$1} =1 } split /\s*,\s*/, $x509->extensions_by_oid->{"2.5.29.17"}->to_string;
+    for my $domain (keys %$domains){
+        if (not $dns{$domain}){
+            warn "Certificate for ".join(', ',keys %$domains)." is missing domain $domain. Renewing.\n";
+            return 0;
+        };
+    }
+    if ($x509->checkend(30*24*3600)){
+        warn "Certificate for ".join(', ',keys %$domains)." expires within 30 days. Renewing.\n";
+        return 0;
+    }
+    warn "Certificate for ".join(', ',keys %$domains)." still ok. Skipping. (use --force to override)\n";
+    return 1;
 }
 
 __END__
@@ -285,6 +327,8 @@ B<acmefetch> [I<options>...]
      --version       output version information and exit
      --cfg=file      alternate config file (not ../etc/acmefetch.cfg)
      --staging       use the server specified in ACMEstaging
+     --force         will renew certs even when they are not expired
+     --verbose       talk more while working
 
 =head1 DESCRIPTION
 
