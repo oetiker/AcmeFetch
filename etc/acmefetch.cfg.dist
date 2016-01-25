@@ -7,6 +7,7 @@
     "CERTS": [
         {
             "certOutput": "/tmp/testCert.pem",
+            "certFormat": "PEM",
             "keyOutput": "/tmp/testCert.key",
             "commonName": "my.web.domain",
             "SITES": {
