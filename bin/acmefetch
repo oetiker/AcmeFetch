@@ -2,6 +2,7 @@
 
 use lib qw(); # PERL5LIB
 use FindBin;use lib "$FindBin::RealBin/../lib";use lib "$FindBin::RealBin/../thirdparty/lib/perl5"; # LIBDIR
+
 # use lib qw(/home/oetiker/checkouts/Protocol-ACME/lib);
 use Protocol::ACME;
 use Data::Processor;
@@ -36,6 +37,11 @@ sub main()
 }
 
 main;
+
+sub bla {
+    my $text = shift;
+    print "* $text\n" if $opt{verbose};
+}
 
 # get a validator for our configuration file
 
@@ -258,7 +264,8 @@ sub getCertificates {
     my $cfg = shift;
     my $openssl = $cfg->{GENERAL}{opensslBin};
     for my $cert (@{$cfg->{CERTS}}){
-        next if not $opt{force} and not checkCert($cert->{certOutput},$cert->{SITES});
+        bla "## $cert->{commonName} ##";
+        next if checkCert($cert->{certOutput},$cert->{SITES}) and not $opt{force};
         my $acme = Protocol::ACME->new(
             host => $cfg->{GENERAL}{host},
             account_key => {
@@ -269,23 +276,30 @@ sub getCertificates {
             loglevel => ($opt{verbose} ? 'debug': 'error'),
             debug => $opt{verbose},
         );
+        bla "talk to $cfg->{GENERAL}{host}";
         $acme->directory();
         $acme->register();
         $acme->accept_tos();
         for my $domain (sort keys %{$cert->{SITES}}){
+            bla "authorize $domain via $cert->{SITES}{$domain}{challengeConfig}{www_root}";
             $acme->authz( $domain );
             $acme->handle_challenge( $cert->{SITES}{$domain}{challengeObj} );
             $acme->check_challenge();
         }
         my $csrFile = makeCsr($cfg,$cert);
-        my $certData = Crypt::OpenSSL::X509->new_from_string(
-            $acme->sign( $csrFile ),Crypt::OpenSSL::X509::FORMAT_ASN1
-        )->as_string($cert->{certFormat});
-        $certFile = $cert->{certOutput};
-        my $fh = IO::File->new( $certFile, "w" )
-            || die "Write $certFile: $!";
-        print $fh $certData;
-        $fh->close();
+        eval {
+            my $certData = Crypt::OpenSSL::X509->new_from_string(
+                $acme->sign( $csrFile ),Crypt::OpenSSL::X509::FORMAT_ASN1
+            )->as_string($cert->{certFormat});
+            $certFile = $cert->{certOutput};
+            my $fh = IO::File->new( $certFile, "w" )
+                || die "Write $certFile: $!";
+            print $fh $certData;
+            $fh->close();
+        };
+        if ($@){
+            warn "PROBLEM: $@\n";
+        }
     }
 }
 
@@ -294,22 +308,22 @@ sub getCertificates {
 sub checkCert {
     my $file = shift;
     my $domains = shift;
-    return 0 if not -r $file and not -z $file;
+    return 0 if not -r $file or -z $file;
     my $x509 = Crypt::OpenSSL::X509->new_from_file($file,$cert->{certFormat});
     my %dns;
     $x509->subject() =~ m{CN=([^,/\s]+)} and $dns{$1} = 1;
     map { /DNS:([^\s]+)/ and $dns{$1} =1 } split /\s*,\s*/, $x509->extensions_by_oid->{"2.5.29.17"}->to_string;
     for my $domain (keys %$domains){
         if (not $dns{$domain}){
-            warn "Certificate for ".join(', ',keys %$domains)." is missing domain $domain. Renewing.\n";
+            bla "Cert is missing domain $domain. Renewing.\n";
             return 0;
         };
     }
     if ($x509->checkend(30*24*3600)){
-        warn "Certificate for ".join(', ',keys %$domains)." expires within 30 days. Renewing.\n";
+        bla "Cert expires within 30 days. Renewing.\n";
         return 0;
     }
-    warn "Certificate for ".join(', ',keys %$domains)." still ok. Skipping. (use --force to override)\n";
+    bla "Cert still ok. Skipping. (use --force to override)\n";
     return 1;
 }
 
