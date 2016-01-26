@@ -350,9 +350,35 @@ B<acmefetch> [I<options>...]
 Use the services of Let's Encrypt to generate SSL certificates.
 Use the F<acmefetch.cfg> file to specify what should be done.
 
+=head1 APACHE NOTES
+
+The ACME protocol requires remote access files stored in your website to verify
+that you have control over the website. Since the website may have special ideas about
+how it wants to control file access. Some special F<.htaccess> rules may come in handy.
+
+=head2 Exclude from authentication
+
+ AuthType Basic
+ AuthName "Protect Everything"
+ AuthUserFile /home/demo/htpasswd
+ Require valid-user
+
+ SetEnvIf Request_URI ".well-known/acme-challenge" allow
+ Order allow,deny
+ Allow from env=allow
+ Satisfy any
+
+=head2 Skip Rewrite rules
+
+ RewriteEngine On
+ RewriteBase /
+
+ RewriteCond %{REQUEST_URI} !.well-known/acme-challenge
+ RewriteRule (.*)  http://localhost:23020/$1  [P]
+
 =head1 COPYRIGHT
 
-Copyright (c) 2016 by Tobias Oetiker. All rights reserved.
+Copyright (c) 2016 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
@@ -376,6 +402,6 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
 =head1 HISTORY
 
- 2006-XX-XX ds Initial Version
+ 2016-01-20 to Initial Version
 
 =cut
