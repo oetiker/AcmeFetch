@@ -38,7 +38,7 @@ sub main()
 
 main;
 
-sub bla ($) {
+sub bla {
     my $text = shift;
     print "* $text\n" if $opt{verbose};
 }

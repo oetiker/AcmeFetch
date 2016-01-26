@@ -1,4 +1,6 @@
-2016-01-26 16:39:24 +0100  (HEAD, tag: v0.3.2, origin/master, master)  better documentation -- Tobias Oetiker
+2016-01-26 20:08:59 +0100  (HEAD, origin/master, master)  make bla work without quotes ... -- Tobias Oetiker
+2016-01-26 20:02:21 +0100  (tag: v0.3.3)  add some documentation -- Tobias Oetiker
+2016-01-26 16:39:24 +0100  (tag: v0.3.2)  better documentation -- Tobias Oetiker
 2016-01-26 16:31:51 +0100   added progress reporting -- Tobias Oetiker
 2016-01-25 18:11:03 +0100   maybe adding an explicity Math::BigInt dependency will unbreak Travis ? -- Tobias Oetiker
 2016-01-25 17:58:40 +0100  (tag: v0.3.1)  * make 'on demand' rebuild work * add ssl dependency -- Tobias Oetiker
