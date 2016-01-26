@@ -1,0 +1,76 @@
+=head1 NAME
+
+acmefetch - generate ACME based certificates
+
+=head1 SYNOPSIS
+
+B<acmefetch> [I<options>...]
+
+     --man           show man-page and exit
+ -h, --help          display this help and exit
+     --version       output version information and exit
+     --cfg=file      alternate config file (not ../etc/acmefetch.cfg)
+     --staging       use the server specified in ACMEstaging
+     --force         will renew certs even when they are not expired
+     --verbose       talk more while working
+
+=head1 DESCRIPTION
+
+Use the services of Let's Encrypt to generate SSL certificates.
+Use the F<acmefetch.cfg> file to specify what should be done.
+
+=head1 APACHE NOTES
+
+The ACME protocol requires remote access files stored in your website to verify
+that you have control over the website. Since the website may have special ideas about
+how it wants to control file access. Some special F<.htaccess> rules may come in handy.
+
+=head2 Exclude from authentication
+
+ AuthType Basic
+ AuthName "Protect Everything"
+ AuthUserFile /home/demo/htpasswd
+ Require valid-user
+
+ SetEnvIf Request_URI ".well-known/acme-challenge" allow
+ Order allow,deny
+ Allow from env=allow
+ Satisfy any
+
+=head2 Skip Rewrite rules
+
+ RewriteEngine On
+ RewriteBase /
+
+ RewriteCond %{REQUEST_URI} !.well-known/acme-challenge
+ RewriteRule (.*)  http://localhost:23020/$1  [P]
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+
+=head1 HISTORY
+
+ 2016-01-20 to Initial Version
+
+=cut

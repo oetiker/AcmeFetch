@@ -1,4 +1,7 @@
-2016-01-25 17:58:40 +0100  (HEAD, tag: v0.3.1, origin/master, master)  * make 'on demand' rebuild work * add ssl dependency -- Tobias Oetiker
+2016-01-26 16:39:24 +0100  (HEAD, tag: v0.3.2, origin/master, master)  better documentation -- Tobias Oetiker
+2016-01-26 16:31:51 +0100   added progress reporting -- Tobias Oetiker
+2016-01-25 18:11:03 +0100   maybe adding an explicity Math::BigInt dependency will unbreak Travis ? -- Tobias Oetiker
+2016-01-25 17:58:40 +0100  (tag: v0.3.1)  * make 'on demand' rebuild work * add ssl dependency -- Tobias Oetiker
 2016-01-25 11:27:46 +0100  (tag: v0.3.0)  fix sample config -- Tobias Oetiker
 2016-01-25 11:25:29 +0100   * only renew certificates that are expired OR do not contain all subject alternativ names * make this work with the 0.09 api -- Tobias Oetiker
 2016-01-25 08:21:38 +0100  (tag: v0.2.2)  release 0.2.2 -- Tobias Oetiker

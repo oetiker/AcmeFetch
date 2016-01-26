@@ -3,7 +3,7 @@
 use lib qw(); # PERL5LIB
 use FindBin;use lib "$FindBin::RealBin/../lib";use lib "$FindBin::RealBin/../thirdparty/lib/perl5"; # LIBDIR
 
-# use lib qw(/home/oetiker/checkouts/Protocol-ACME/lib);
+use lib qw(/home/oetiker/checkouts/Protocol-ACME/lib);
 use Protocol::ACME;
 use Data::Processor;
 use Data::Processor::ValidatorFactory;
