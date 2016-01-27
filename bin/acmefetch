@@ -242,7 +242,7 @@ CSRcfg_END
     print "$cfgFh";
     my $csrFh = File::Temp->new( UNLINK => 0,SUFFIX => '.csr');
     system $openssl,qw(req -nodes -newkey rsa:2048 -batch -reqexts SAN -outform der),
-        -keyout => $cert->{keyOutput},
+        -keyout => $cert->{keyOutput}.'.'.$$,
         -out  => $csrFh->filename(),
         -config => $cfgFh->filename();
     say $cfgFh;
@@ -296,8 +296,10 @@ sub getCertificates {
                 || die "Write $certFile: $!";
             print $fh $certData;
             $fh->close();
+            rename $cert->{keyOutput}.'.'.$$, $cert->{keyOutput};
         };
         if ($@){
+            unlink $cert->{keyOutput}.'.'.$$;
             warn "PROBLEM: $@\n";
         }
     }
