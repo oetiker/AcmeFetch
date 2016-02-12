@@ -13,7 +13,7 @@ use Pod::Usage 1.14;
 use File::Temp;
 use Data::Dumper;
 use Crypt::OpenSSL::X509;
-
+use FindBin;
 
 my $VERSION = '0.dev'; # VERSION
 
