@@ -1,9 +1,10 @@
 #!/usr/bin/env perl
-
+use warnings;
+use strict;
 use lib qw(); # PERL5LIB
-use FindBin;use lib "$FindBin::RealBin/../lib";use lib "$FindBin::RealBin/../thirdparty/lib/perl5"; # LIBDIR
+use FindBin;
+use lib "$FindBin::RealBin/../lib";use lib "$FindBin::RealBin/../thirdparty/lib/perl5"; # LIBDIR
 
-use lib qw(/home/oetiker/checkouts/Protocol-ACME/lib);
 use Protocol::ACME;
 use Data::Processor;
 use Data::Processor::ValidatorFactory;
@@ -17,13 +18,19 @@ use FindBin;
 
 my $VERSION = '0.dev'; # VERSION
 
+my %formatMap = (
+    DER => Crypt::OpenSSL::X509::FORMAT_ASN1(),
+    PEM => Crypt::OpenSSL::X509::FORMAT_PEM(),
+);
+
+
 # parse options
 my %opt = ();
 sub main()
 {
 
-    GetOptions(\%opt, 'help|h', 'man', 'version','force',
-               'cfg=s', 'staging','verbose') or exit(1);
+    GetOptions(\%opt, 'help|h', 'man', 'version','force','debug',
+               'cfg=s', 'staging','verbose','checkonly') or exit(1);
     if($opt{help})     { pod2usage(1) }
     if($opt{man})      { pod2usage(-exitstatus => 0, -verbose => 2) }
     if($opt{version})  { print "acmefetch $VERSION\n"; exit(0) }
@@ -32,15 +39,18 @@ sub main()
 
     $cfg->{GENERAL}{host} = $opt{staging} ? $cfg->{GENERAL}->{ACMEstaging}
                                             : $cfg->{GENERAL}->{ACMEservice};
-
     getCertificates($cfg);
 }
 
 main;
 
 sub bla {
+    my $level = shift;
     my $text = shift;
-    print "* $text\n" if $opt{verbose};
+    if ($opt{verbose}
+        or ($opt{checkonly} and $level eq 'info')){
+         print "* $text\n";
+    }
 }
 
 # get a validator for our configuration file
@@ -90,12 +100,27 @@ sub getDataProcessor {
                     validator => $vf->file('>>','cert file'),
                 },
                 certFormat => {
-                    description => 'PEM or ASN1 output format for the cert',
-                    validator => $vf->rx('^(ASN1|PEM)','Pick ASN1 or PEM'),
+                    description => 'PEM or DER output format for the cert',
+                    validator => $vf->rx('^(DER|PEM)','Pick DER or PEM'),
+                    default => 'PEM',
                 },
                 keyOutput => {
                     description => 'key output file',
                     validator => $vf->file('>>','key file')
+                },
+                keyFormat => {
+                    description => 'PEM or DER output format for the cert',
+                    validator => $vf->rx('^(DER|PEM)','Pick DER or PEM'),
+                    default => 'PEM',
+                },
+                chainOutput => {
+                    description => 'chain output file',
+                    validator => $vf->file('>>','chain file'),
+                },
+                chainFormat => {
+                    description => 'PEM or DER output format for the chian file',
+                    validator => $vf->rx('^(DER|PEM)','Pick DER or PEM'),
+                    default => 'PEM',
                 },
                 commonName => {
                     description => 'designate the common name in the certificate. the other sites will be listed as subjectAltName entries.',
@@ -181,18 +206,22 @@ sub loadJSONCfg {
     return $raw_cfg;
 }
 
+sub convertCert {
+    my $cert = shift;
+    my $inForm = shift;
+    my $outForm = shift;
+    return (Crypt::OpenSSL::X509->new_from_string($cert,$formatMap{$inForm})->as_string($formatMap{$outForm}));
+}
+
 sub loadCfg {
     my $file = shift;
     my $cfg = loadJSONCfg($file);
     my $err = getDataProcessor()->validate($cfg);
+    my $hasErrors;
     for my $cert (@{$cfg->{CERTS}}){
         if (not exists $cert->{SITES}{$cert->{commonName}} ){
             die "commonName ($cert->{commonName}) has no matching site entry.\n"
         }
-        $cert->{certFormat} = {
-            DER => Crypt::OpenSSL::X509::FORMAT_ASN1,
-            PEM => Crypt::OpenSSL::X509::FORMAT_PEM,
-        }->{$cert->{certFormat}};
 
         for my $site (sort keys %{$cert->{SITES}}){
             my $sp = $cert->{SITES}{$site};
@@ -200,7 +229,7 @@ sub loadCfg {
                 "Protocol::ACME::Challenge::$sp->{challengeHandler}"->new($sp->{challengeConfig});
             };
             if ($@){
-                die "Failed to instanciate Challenge handler for $key ($@)\n";
+                die "Failed to instanciate Challenge handler for $site - $sp->{challengeHandler} ($@)\n";
             }
         }
     }
@@ -243,9 +272,10 @@ CSRcfg_END
     my $csrFh = File::Temp->new( UNLINK => 0,SUFFIX => '.csr');
     system $openssl,qw(req -nodes -newkey rsa:2048 -batch -reqexts SAN -outform der),
         -keyout => $cert->{keyOutput}.'.'.$$,
+        -keyform => $cert->{keyFormat},
         -out  => $csrFh->filename(),
         -config => $cfgFh->filename();
-    say $cfgFh;
+    chmod 0600, $cert->{keyOutput}.'.'.$$;
     unlink $cfgFh->filename();
     return $csrFh->filename();
 }
@@ -264,8 +294,9 @@ sub getCertificates {
     my $cfg = shift;
     my $openssl = $cfg->{GENERAL}{opensslBin};
     for my $cert (@{$cfg->{CERTS}}){
-        bla "## $cert->{commonName} ##";
-        next if checkCert($cert->{certOutput},$cert->{SITES}) and not $opt{force};
+        bla 'debug',"## $cert->{commonName} ##";
+        next if checkCert($cert->{certOutput},$cert->{certFormat},$cert->{SITES}) and not $opt{force};
+        next if $opt{checkonly};
         my $acme = Protocol::ACME->new(
             host => $cfg->{GENERAL}{host},
             account_key => {
@@ -273,29 +304,32 @@ sub getCertificates {
                 format => 'PEM',
             },
             openssl => $cfg->{GENERAL}{opensslBin},
-            loglevel => ($opt{verbose} ? 'debug': 'error'),
-            debug => $opt{verbose},
+            loglevel => ($opt{debug} ? 'debug': 'error'),
+            debug => $opt{debug},
         );
-        bla "talk to $cfg->{GENERAL}{host}";
+        bla 'debug',"talk to $cfg->{GENERAL}{host}";
         $acme->directory();
         $acme->register();
         $acme->accept_tos();
         for my $domain (sort keys %{$cert->{SITES}}){
-            bla "authorize $domain via $cert->{SITES}{$domain}{challengeConfig}{www_root}";
+            bla 'debug',"authorize $domain via $cert->{SITES}{$domain}{challengeConfig}{www_root}";
             $acme->authz( $domain );
             $acme->handle_challenge( $cert->{SITES}{$domain}{challengeObj} );
             $acme->check_challenge();
         }
         my $csrFile = makeCsr($cfg,$cert);
         eval {
-            my $certData = Crypt::OpenSSL::X509->new_from_string(
-                $acme->sign( $csrFile ),Crypt::OpenSSL::X509::FORMAT_ASN1
-            )->as_string($cert->{certFormat});
-            $certFile = $cert->{certOutput};
+            my $certData = convertCert($acme->sign( $csrFile ),'DER',$cert->{certFormat});
+            my $certFile = $cert->{certOutput};
             my $fh = IO::File->new( $certFile, "w" )
                 || die "Write $certFile: $!";
             print $fh $certData;
             $fh->close();
+            my $chainData = convertCert($acme->chain(),'DER',$cert->{chainFormat});
+            my $fh2 = IO::File->new( $cert->{chainOutput}, "w" )
+                || die "Write $cert->{chainOutput}: $!";
+            print $fh2 $chainData;
+            $fh2->close();
             rename $cert->{keyOutput}.'.'.$$, $cert->{keyOutput};
         };
         if ($@){
@@ -309,23 +343,28 @@ sub getCertificates {
 
 sub checkCert {
     my $file = shift;
+    my $format = shift;
+
     my $domains = shift;
-    return 0 if not -r $file or -z $file;
-    my $x509 = Crypt::OpenSSL::X509->new_from_file($file,$cert->{certFormat});
+    if (not -r $file or -z $file){
+        bla 'info',"Cert $file is missing. Generating.\n";
+        return 0;
+    };
+    my $x509 = Crypt::OpenSSL::X509->new_from_file($file,$formatMap{$format});
     my %dns;
     $x509->subject() =~ m{CN=([^,/\s]+)} and $dns{$1} = 1;
     map { /DNS:([^\s]+)/ and $dns{$1} =1 } split /\s*,\s*/, $x509->extensions_by_oid->{"2.5.29.17"}->to_string;
     for my $domain (keys %$domains){
         if (not $dns{$domain}){
-            bla "Cert is missing domain $domain. Renewing.\n";
+            bla 'info',"Cert $file missing domain $domain. Renewing.\n";
             return 0;
         };
     }
     if ($x509->checkend(30*24*3600)){
-        bla "Cert expires within 30 days. Renewing.\n";
+        bla 'info',"Cert expires within 30 days. Renewing.\n";
         return 0;
     }
-    bla "Cert still ok. Skipping. (use --force to override)\n";
+    bla 'debug',"Cert still ok. Skipping. (use --force to override)\n";
     return 1;
 }
 
@@ -344,6 +383,7 @@ B<acmefetch> [I<options>...]
      --version       output version information and exit
      --cfg=file      alternate config file (not ../etc/acmefetch.cfg)
      --staging       use the server specified in ACMEstaging
+     --checkonly     only check validity of existing certs
      --force         will renew certs even when they are not expired
      --verbose       talk more while working
 

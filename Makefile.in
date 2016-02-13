@@ -82,7 +82,7 @@ POST_UNINSTALL = :
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(dist_bin_SCRIPTS) AUTHORS README conftools/install-sh \
+	$(dist_bin_SCRIPTS) AUTHORS README TODO conftools/install-sh \
 	conftools/missing $(top_srcdir)/conftools/install-sh \
 	$(top_srcdir)/conftools/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4

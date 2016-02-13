@@ -11,6 +11,7 @@ B<acmefetch> [I<options>...]
      --version       output version information and exit
      --cfg=file      alternate config file (not ../etc/acmefetch.cfg)
      --staging       use the server specified in ACMEstaging
+     --checkonly     only check validity of existing certs
      --force         will renew certs even when they are not expired
      --verbose       talk more while working
 

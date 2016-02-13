@@ -34,6 +34,15 @@ Configuration
 
 Take a look at the etc/acmefetch.cfg.dist file for inspiration.
 
+Documentation
+-------------
+
+First make sure you understand how letsencrypt certificates work
+by reading https://letsencrypt.org/howitworks/technology/
+
+The read the acmefetch documentation in the doc directory and finally take
+some inspiration from the sample configuration file provided.
+
 Enjoy!
 
 Tobias Oetiker <tobi@oetiker.ch>

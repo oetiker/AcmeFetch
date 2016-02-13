@@ -1,4 +1,7 @@
-2016-01-26 20:08:59 +0100  (HEAD, origin/master, master)  make bla work without quotes ... -- Tobias Oetiker
+2016-02-12 19:47:07 +0100   - a couple of fixes -- Dominik Hassler
+2016-01-27 11:18:46 +0100   output the key to a temp file -- Tobias Oetiker
+2016-01-26 20:40:59 +0100  (tag: v0.3.4)  fix version string -- Tobias Oetiker
+2016-01-26 20:08:59 +0100   make bla work without quotes ... -- Tobias Oetiker
 2016-01-26 20:02:21 +0100  (tag: v0.3.3)  add some documentation -- Tobias Oetiker
 2016-01-26 16:39:24 +0100  (tag: v0.3.2)  better documentation -- Tobias Oetiker
 2016-01-26 16:31:51 +0100   added progress reporting -- Tobias Oetiker

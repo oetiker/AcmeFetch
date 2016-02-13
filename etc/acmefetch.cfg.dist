@@ -2,13 +2,16 @@
     "GENERAL": {
         "ACMEstaging": "acme-staging.api.letsencrypt.org",
         "ACMEservice": "acme-v01.api.letsencrypt.org",
-        "accountKeyPath": "/tmp/accountKey.key"
+        "accountKeyPath": "/etc/ssl/private/letsencryptAccountKey.key"
     },
     "CERTS": [
         {
-            "certOutput": "/tmp/testCert.pem",
+            "certOutput": "/etc/ssl/certs/testCert.pem",
             "certFormat": "PEM",
-            "keyOutput": "/tmp/testCert.key",
+            "keyOutput": "/etc/ssl/private/testCert.key",
+            "keyFormat": "PEM",
+            "chainFormat": "/etc/ssl/certs/testCertChain.pem",
+            "chainFormat": "PEM",
             "commonName": "my.web.domain",
             "SITES": {
                 "my.web.domain": {
