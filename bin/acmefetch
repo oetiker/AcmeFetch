@@ -109,7 +109,7 @@ sub getDataProcessor {
                     validator => $vf->file('>>','key file')
                 },
                 keyFormat => {
-                    description => 'PEM or DER output format for the cert',
+                    description => 'PEM or DER output format for the key',
                     validator => $vf->rx('^(DER|PEM)','Pick DER or PEM'),
                     default => 'PEM',
                 },
@@ -118,7 +118,7 @@ sub getDataProcessor {
                     validator => $vf->file('>>','chain file'),
                 },
                 chainFormat => {
-                    description => 'PEM or DER output format for the chian file',
+                    description => 'PEM or DER output format for the chain file',
                     validator => $vf->rx('^(DER|PEM)','Pick DER or PEM'),
                     default => 'PEM',
                 },
