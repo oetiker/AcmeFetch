@@ -10,7 +10,7 @@
             "certFormat": "PEM",
             "keyOutput": "/etc/ssl/private/testCert.key",
             "keyFormat": "PEM",
-            "chainFormat": "/etc/ssl/certs/testCertChain.pem",
+            "chainOutput": "/etc/ssl/certs/testCertChain.pem",
             "chainFormat": "PEM",
             "commonName": "my.web.domain",
             "SITES": {
