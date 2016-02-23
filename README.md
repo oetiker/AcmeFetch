@@ -13,6 +13,17 @@ ssl certificates using the the services of Let's Encrypt!
 Setup
 -----
 
+To build AcmeFetch you require the perl, openssl and gcc packages on your
+system.
+
+On RedHat you get them with:
+
+    yum install perl-core openssl-devel gcc
+
+On Ubuntu / Debian with:
+
+    apt-get install perl libssl-dev gcc
+
 Get a copy of AcmeFetch from https://github.com/oetiker/AcmeFetch/releases
 and unpack it into your scratch directory and cd there.
 

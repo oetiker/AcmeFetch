@@ -39,7 +39,7 @@ man/%.1: bin/% VERSION
 
 dist_bin_SCRIPTS = $(BIN)
 
-dist-hook: thirdparty/CPAN/touch $(POD)
+dist-hook: $(POD)
 	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README.md $(distdir)/COPYRIGHT
 	$(PERL) -i -p -e 's/^my .*# VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; # VERSION/' $(distdir)/$(BIN)
 

@@ -1,3 +1,4 @@
+2016-02-13 18:25:02 +0100  (HEAD, tag: v0.4.0, origin/master, master)  * --checkonly option added * make format for certs and keys configurable * updated to Protocol::ACME 0.11 * fix missing use FindBin -- Tobias Oetiker
 2016-02-12 19:47:07 +0100   - a couple of fixes -- Dominik Hassler
 2016-01-27 11:18:46 +0100   output the key to a temp file -- Tobias Oetiker
 2016-01-26 20:40:59 +0100  (tag: v0.3.4)  fix version string -- Tobias Oetiker
