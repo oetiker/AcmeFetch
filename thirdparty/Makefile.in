@@ -141,7 +141,6 @@ LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-MISSING_PERL_MODULES = @MISSING_PERL_MODULES@
 MKDIR_P = @MKDIR_P@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -319,7 +318,7 @@ clean-am: clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic
+distclean-am: clean-am distclean-generic distclean-local
 
 dvi: dvi-am
 
@@ -383,8 +382,8 @@ uninstall-am:
 
 .PHONY: all all-am all-local check check-am clean clean-generic \
 	clean-local cscopelist-am ctags-am distclean distclean-generic \
-	distdir dvi dvi-am html html-am info info-am install \
-	install-am install-data install-data-am install-dvi \
+	distclean-local distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
@@ -394,11 +393,10 @@ uninstall-am:
 	uninstall-am
 
 
-all-local:
-	$(AM_V_GEN)[ "$(MISSING_PERL_MODULES)" == "" ] || $(GMAKE) touch
+all-local: touch
 
 touch: CPAN/touch ../config.status
-	$(AM_V_GEN)echo $(MISSING_PERL_MODULES) | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)  --mirror file://$(THIRDPARTY_DIR)/CPAN --mirror-only
+	$(AM_V_GEN)cat ../PERL_MODULES | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)  --mirror file://$(THIRDPARTY_DIR)/CPAN --mirror-only
 	$(AM_V_GEN)touch touch
 
 CPAN/touch: ../PERL_MODULES
@@ -412,7 +410,10 @@ CPAN/touch: ../PERL_MODULES
 	$(AM_V_GEN)touch CPAN/touch
 
 clean-local:
-	ls -1 | grep -v Makefile. | xargs rm -rf
+	ls -1 | grep -v Makefile | grep -v bin | grep -v CPAN | xargs rm -rf
+
+distclean-local:
+		ls -1 | grep -v Makefile | xargs rm -rf
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

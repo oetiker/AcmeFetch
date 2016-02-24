@@ -626,7 +626,6 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-MISSING_PERL_MODULES
 PERL5LIB
 enable_pkgonly
 GMAKE
@@ -4623,29 +4622,6 @@ fi
 
 
 
-# Check the necessary Perl modules
-
-mod_ok=1
-MISSING_PERL_MODULES=""
-if test "$enable_pkgonly" != yes; then
-   for module in Crypt::RSA::Parse@0.041 Protocol::ACME@0.11 Data::Processor Pod::Usage JSON Crypt::OpenSSL::X509 Net::SSLeay IO::Socket::SSL ; do
-     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for perl module '$module'" >&5
-$as_echo_n "checking for perl module '$module'... " >&6; }
-     if ${PERL} -I`dirname $0`/thirdparty/lib/perl5 -e 'my($m,$v) = split /\@/, q{'$module'};eval "use $m"; exit 1 if $@; exit 1 if not $v or eval(q{$}.$m.q{::VERSION}) ne $v' ; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: Ok" >&5
-$as_echo "Ok" >&6; }
-     else
-         MISSING_PERL_MODULES="${MISSING_PERL_MODULES} $module"
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: Auto Install" >&5
-$as_echo "Auto Install" >&6; }
-         mod_ok=0
-     fi
-   done
-fi
-
-
-
-
 ac_config_files="$ac_config_files Makefile etc/Makefile thirdparty/Makefile"
 
 
@@ -5982,7 +5958,6 @@ Settings:
 
   PERL5LIB = ${PERL5LIB:-"not set"}
   PERL = $PERL
-  MODULES = ${MISSING_PERL_MODULES:-"All modules present"}
 
 The Makefiles use GNU make functionality.
 Continue installation with
