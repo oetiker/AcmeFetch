@@ -22,9 +22,9 @@ Use the F<acmefetch.cfg> file to specify what should be done.
 
 =head1 APACHE NOTES
 
-The ACME protocol requires remote access files stored in your website to verify
+The ACME protocol requires remote access to files stored in your website to verify
 that you have control over the website. Since the website may have special ideas about
-how it wants to control file access. Some special F<.htaccess> rules may come in handy.
+how it wants to control file access, some special F<.htaccess> rules may come in handy.
 
 =head2 Exclude from authentication
 
