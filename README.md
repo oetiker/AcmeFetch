@@ -33,7 +33,7 @@ and unpack it into your scratch directory and cd there.
 Configure will check if all requirements are met and give
 hints on how to fix the situation if something is missing.
 
-Any mising perl modules will be built and installed into the prefix
+Any missing perl modules will be built and installed into the prefix
 directory. Your system perl will NOT be affected by this.
 
 To install the application, just run
