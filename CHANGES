@@ -1,3 +1,5 @@
+2016-02-24 16:32:08 +0100  (HEAD -> master, origin/master)  drop the whole perl module testing stuff from configure ... just confusing -- Tobias Oetiker
+2016-02-23 17:59:03 +0100  (tag: v0.4.1)  merge changes -- Tobias Oetiker
 2016-02-13 19:15:39 +0100   - config file fix -- Dominik Hassler
 2016-02-23 17:57:33 +0100   make configure more careful with checking the environment before getting perl to build things -- Tobias Oetiker
 2016-02-13 18:25:02 +0100  (tag: v0.4.0)  * --checkonly option added * make format for certs and keys configurable * updated to Protocol::ACME 0.11 * fix missing use FindBin -- Tobias Oetiker

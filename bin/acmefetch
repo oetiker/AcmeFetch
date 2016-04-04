@@ -184,16 +184,16 @@ sub loadJSONCfg {
             my $c =0;
             warn "Reading ".$file."\n";
             warn "$warning\n\n";
-            while (<$json>){
-                chomp;
+            while (my $row = <$json>){
+                chomp $row;
                 $c++;
                 if ($c == $line){
                     warn ">-".('-' x $offset).'.'."  line $line\n";
-                    warn "  $_\n";
+                    warn "  $row\n";
                     warn ">-".('-' x $offset).'^'."\n";
                 }
                 elsif ($c+3 > $line and $c-3 < $line){
-                    warn "  $_\n";
+                    warn "  $row\n";
                 }
             }
             warn "\n";
@@ -233,8 +233,8 @@ sub loadCfg {
             }
         }
     }
-    for ($err->as_array){
-        warn "Config ERROR: $_\n";
+    for my $msg ($err->as_array){
+        warn "Config ERROR: $msg\n";
         $hasErrors = 1;
     }
     die "Can't continue with config errors\n" if $hasErrors;

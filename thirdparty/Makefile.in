@@ -158,6 +158,7 @@ POD2MAN = @POD2MAN@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+UNZIP = @UNZIP@
 URL_CAT = @URL_CAT@
 VERSION = @VERSION@
 WGET = @WGET@
@@ -395,7 +396,7 @@ uninstall-am:
 
 all-local: touch
 
-touch: CPAN/touch ../config.status
+touch: CPAN/touch ../config.status  ../PERL_MODULES
 	$(AM_V_GEN)cat ../PERL_MODULES | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)  --mirror file://$(THIRDPARTY_DIR)/CPAN --mirror-only
 	$(AM_V_GEN)touch touch
 
@@ -413,7 +414,7 @@ clean-local:
 	ls -1 | grep -v Makefile | grep -v bin | grep -v CPAN | xargs rm -rf
 
 distclean-local:
-		ls -1 | grep -v Makefile | xargs rm -rf
+	ls -1 | grep -v Makefile. | xargs rm -rf
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
