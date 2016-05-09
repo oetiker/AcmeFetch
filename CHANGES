@@ -1,4 +1,8 @@
-2016-02-24 16:32:08 +0100  (HEAD -> master, origin/master)  drop the whole perl module testing stuff from configure ... just confusing -- Tobias Oetiker
+2016-04-04 15:28:07 +0200  (HEAD, origin/master, master)  fix readme spelling -- Tobias Oetiker
+2016-02-28 14:17:15 +0100   fix typos -- Jan Willamowius
+2016-02-28 14:18:12 +0100   fix typos -- Jan Willamowius
+2016-04-04 15:25:08 +0200   add unzip dependency -- Tobias Oetiker
+2016-02-24 16:32:08 +0100   drop the whole perl module testing stuff from configure ... just confusing -- Tobias Oetiker
 2016-02-23 17:59:03 +0100  (tag: v0.4.1)  merge changes -- Tobias Oetiker
 2016-02-13 19:15:39 +0100   - config file fix -- Dominik Hassler
 2016-02-23 17:57:33 +0100   make configure more careful with checking the environment before getting perl to build things -- Tobias Oetiker

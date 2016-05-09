@@ -20,11 +20,14 @@ B<acmefetch> [I<options>...]
 Use the services of Let's Encrypt to generate SSL certificates.
 Use the F<acmefetch.cfg> file to specify what should be done.
 
+If a key or cert file gets replaced, the old version is renamed to end
+with a timestamp of its last modification date.
+
 =head1 APACHE NOTES
 
-The ACME protocol requires remote access to files stored in your website to verify
+The ACME protocol requires remote access files stored in your website to verify
 that you have control over the website. Since the website may have special ideas about
-how it wants to control file access, some special F<.htaccess> rules may come in handy.
+how it wants to control file access. Some special F<.htaccess> rules may come in handy.
 
 =head2 Exclude from authentication
 
@@ -73,5 +76,6 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 =head1 HISTORY
 
  2016-01-20 to Initial Version
+ 2016-05-09 to Updated to Protocol::ACME 0.12
 
 =cut

@@ -15,6 +15,7 @@ use File::Temp;
 use Data::Dumper;
 use Crypt::OpenSSL::X509;
 use FindBin;
+use POSIX qw(strftime);
 
 my $VERSION = '0.dev'; # VERSION
 
@@ -316,20 +317,24 @@ sub getCertificates {
             $acme->authz( $domain );
             $acme->handle_challenge( $cert->{SITES}{$domain}{challengeObj} );
             $acme->check_challenge();
+            $acme->cleanup_challenge( $cert->{SITES}{$domain}{challengeObj} );
         }
         my $csrFile = makeCsr($cfg,$cert);
         eval {
             my $certData = convertCert($acme->sign( $csrFile ),'DER',$cert->{certFormat});
             my $certFile = $cert->{certOutput};
+            saveAway($certFile);
             my $fh = IO::File->new( $certFile, "w" )
                 || die "Write $certFile: $!";
             print $fh $certData;
             $fh->close();
             my $chainData = convertCert($acme->chain(),'DER',$cert->{chainFormat});
+            saveAway($cert->{chainOutput});
             my $fh2 = IO::File->new( $cert->{chainOutput}, "w" )
                 || die "Write $cert->{chainOutput}: $!";
             print $fh2 $chainData;
             $fh2->close();
+            saveAway($cert->{keyOutput});
             rename $cert->{keyOutput}.'.'.$$, $cert->{keyOutput};
         };
         if ($@){
@@ -341,13 +346,20 @@ sub getCertificates {
 
 # check if a certificat covers the indicated domains and will NOT expire within the next 30 days
 
+sub saveAway {
+    my $file = shift;
+    return unless -f $file;
+    my $stamp = strftime("%Y%m%d-%H%M%S",localtime([stat($file)]->[9]));
+    rename $file,$file.'.'.$stamp;
+}
+
 sub checkCert {
     my $file = shift;
     my $format = shift;
 
     my $domains = shift;
     if (not -r $file or -z $file){
-        bla 'info',"Cert $file is missing. Generating.\n";
+        bla 'info',"Cert $file is missing.\n";
         return 0;
     };
     my $x509 = Crypt::OpenSSL::X509->new_from_file($file,$formatMap{$format});
@@ -356,12 +368,12 @@ sub checkCert {
     map { /DNS:([^\s]+)/ and $dns{$1} =1 } split /\s*,\s*/, $x509->extensions_by_oid->{"2.5.29.17"}->to_string;
     for my $domain (keys %$domains){
         if (not $dns{$domain}){
-            bla 'info',"Cert $file missing domain $domain. Renewing.\n";
+            bla 'info',"Cert $file missing domain $domain.\n";
             return 0;
         };
     }
     if ($x509->checkend(30*24*3600)){
-        bla 'info',"Cert expires within 30 days. Renewing.\n";
+        bla 'info',"Cert expires within 30 days.\n";
         return 0;
     }
     bla 'debug',"Cert still ok. Skipping. (use --force to override)\n";
@@ -391,6 +403,9 @@ B<acmefetch> [I<options>...]
 
 Use the services of Let's Encrypt to generate SSL certificates.
 Use the F<acmefetch.cfg> file to specify what should be done.
+
+If a key or cert file gets replaced, the old version is renamed to end
+with a timestamp of its last modification date.
 
 =head1 APACHE NOTES
 
@@ -445,5 +460,6 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 =head1 HISTORY
 
  2016-01-20 to Initial Version
+ 2016-05-09 to Updated to Protocol::ACME 0.12
 
 =cut
