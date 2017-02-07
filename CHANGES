@@ -1,4 +1,7 @@
-2016-05-09 09:37:47 +0200  (HEAD, tag: v0.5.0, origin/master, master)  * update to Protocol::ACME 0.12 * remove challenge tokens from the website after use * rename old cert files before installing new ones ... just in case anything fails -- Tobias Oetiker
+2017-02-07 10:17:30 +0100  (HEAD -> master)  updated dependencies -- Tobias Oetiker
+2017-02-07 09:15:22 +0100   copackage a new release of perl-crypt-openssl-x509 since the old one broke with gcc5 -- Tobias Oetiker
+2016-05-09 09:52:11 +0200  (origin/master)  sync CHANGES for 0.5.0 -- Tobias Oetiker
+2016-05-09 09:37:47 +0200  (tag: v0.5.0)  * update to Protocol::ACME 0.12 * remove challenge tokens from the website after use * rename old cert files before installing new ones ... just in case anything fails -- Tobias Oetiker
 2016-04-04 15:28:07 +0200   fix readme spelling -- Tobias Oetiker
 2016-02-28 14:17:15 +0100   fix typos -- Jan Willamowius
 2016-02-28 14:18:12 +0100   fix typos -- Jan Willamowius
