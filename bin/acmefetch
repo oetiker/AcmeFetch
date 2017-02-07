@@ -373,7 +373,7 @@ sub checkCert {
         };
     }
     if ($x509->checkend(30*24*3600)){
-        bla 'info',"Cert expires within 30 days.\n";
+        bla 'info',"Cert $file expires within 30 days.\n";
         return 0;
     }
     bla 'debug',"Cert still ok. Skipping. (use --force to override)\n";
