@@ -344,8 +344,8 @@ sub getCertificates {
     }
 }
 
-# check if a certificat covers the indicated domains and will NOT expire within the next 30 days
 
+# check if a certificat covers the indicated domains and will NOT expire within the next 30 days
 sub saveAway {
     my $file = shift;
     return unless -f $file;
