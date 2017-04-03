@@ -323,33 +323,24 @@ sub getCertificates {
         }
         my $csrFile = makeCsr($cfg,$cert);
         eval {
+            my $certData = convertCert($acme->sign( $csrFile ),'DER',$cert->{certFormat});
+            my $certFile = $cert->{certOutput};
+            saveAway($certFile);
+            my $fh = IO::File->new( $certFile, "w" )
+                || die "Write $certFile: $!";
+            print $fh $certData;
+            
+            # chain file wanted -> write separate chain file, otherwise append to cert file
             if ($cert->{chainOutput}){
-                my $certData = convertCert($acme->sign( $csrFile ),'DER',$cert->{certFormat});
-                my $certFile = $cert->{certOutput};
-                saveAway($certFile);
-                my $fh = IO::File->new( $certFile, "w" )
-                    || die "Write $certFile: $!";
-                print $fh $certData;
+                my $chainFile = $cert->{chainOutput};
                 $fh->close();
-                my $chainData = convertCert($acme->chain(),'DER',$cert->{chainFormat});
-                saveAway($cert->{chainOutput});
-                my $fh2 = IO::File->new( $cert->{chainOutput}, "w" )
-                    || die "Write $cert->{chainOutput}: $!";
-                print $fh2 $chainData;
-                $fh2->close();
+                saveAway($chainFile);
+                $fh = IO::File->new( $chainFile, "w" )
+                    || die "Write $chainFile: $!";
             }
-            # no chain file wanted -> include chain in cert file
-            else {
-                my $certData = convertCert($acme->sign( $csrFile ),'DER',$cert->{certFormat});
-                my $certFile = $cert->{certOutput};
-                my $chainData = convertCert($acme->chain(),'DER',$cert->{chainFormat});
-                saveAway($certFile);
-                my $fh = IO::File->new( $certFile, "w" )
-                    || die "Write $certFile: $!";
-                print $fh $certData;
-                print $fh $chainData;
-                $fh->close();
-            }
+            my $chainData = convertCert($acme->chain(),'DER',$cert->{chainFormat});
+            print $fh $chainData; 
+            $fh->close();
             saveAway($cert->{keyOutput});
             rename $cert->{keyOutput}.'.'.$$, $cert->{keyOutput};
         };
