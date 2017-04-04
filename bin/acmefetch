@@ -338,6 +338,9 @@ sub getCertificates {
                 $fh = IO::File->new( $chainFile, "w" )
                     || die "Write $chainFile: $!";
             }
+            else {
+                $cert->{chainFormat} = $cert->{certFormat};
+            }
             my $chainData = convertCert($acme->chain(),'DER',$cert->{chainFormat});
             print $fh $chainData; 
             $fh->close();
