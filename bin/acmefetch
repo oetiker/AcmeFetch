@@ -366,28 +366,35 @@ sub saveAway {
 sub checkCert {
     my $file = shift;
     my $format = shift;
-
     my $domains = shift;
+    
     if (not -r $file or -z $file){
         bla 'info',"Cert $file is missing.\n";
         return 0;
     };
-    my $x509 = Crypt::OpenSSL::X509->new_from_file($file,$formatMap{$format});
-    my %dns;
-    $x509->subject() =~ m{CN=([^,/\s]+)} and $dns{$1} = 1;
-    map { /DNS:([^\s]+)/ and $dns{$1} =1 } split /\s*,\s*/, $x509->extensions_by_oid->{"2.5.29.17"}->to_string;
-    for my $domain (keys %$domains){
-        if (not $dns{$domain}){
-            bla 'info',"Cert $file missing domain $domain.\n";
+    my $r = eval {
+        my $x509 = Crypt::OpenSSL::X509->new_from_file($file,$formatMap{$format});
+        my %dns;
+        $x509->subject() =~ m{CN=([^,/\s]+)} and $dns{$1} = 1;
+        map { /DNS:([^\s]+)/ and $dns{$1} =1 } split /\s*,\s*/, $x509->extensions_by_oid->{"2.5.29.17"}->to_string;
+        for my $domain (keys %$domains){
+            if (not $dns{$domain}){
+                bla 'info',"Cert $file missing domain $domain.\n";
+                return 0;
+            };
+        }
+        if ($x509->checkend(30*24*3600)){
+            bla 'info',"Cert $file expires within 30 days.\n";
             return 0;
-        };
-    }
-    if ($x509->checkend(30*24*3600)){
-        bla 'info',"Cert $file expires within 30 days.\n";
+        }
+        bla 'debug',"Cert still ok. Skipping. (use --force to override)\n";
+        return 1;
+    };
+    if ($@){
+        warn $@;
         return 0;
     }
-    bla 'debug',"Cert still ok. Skipping. (use --force to override)\n";
-    return 1;
+    return $r;
 }
 
 __END__
