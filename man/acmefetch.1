@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ACMEFETCH 1"
-.TH ACMEFETCH 1 "2017-02-07" "0.6.0" "AcmeFetch"
+.TH ACMEFETCH 1 "2017-05-22" "0.6.1" "AcmeFetch"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -161,6 +161,9 @@ Use the \fIacmefetch.cfg\fR file to specify what should be done.
 .PP
 If a key or cert file gets replaced, the old version is renamed to end
 with a timestamp of its last modification date.
+.SH "CERT NOTES"
+.IX Header "CERT NOTES"
+If you omit the chainOutput and chainFormat keys in your config, key and chain get written to the file you specify in certOutput. Cert first, then chain. E.g. the way nginx expects it.
 .SH "APACHE NOTES"
 .IX Header "APACHE NOTES"
 The \s-1ACME\s0 protocol requires remote access files stored in your website to verify

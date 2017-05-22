@@ -23,6 +23,10 @@ Use the F<acmefetch.cfg> file to specify what should be done.
 If a key or cert file gets replaced, the old version is renamed to end
 with a timestamp of its last modification date.
 
+=head1 CERT NOTES
+
+If you omit the chainOutput and chainFormat keys in your config, key and chain get written to the file you specify in certOutput. Cert first, then chain. E.g. the way nginx expects it.
+
 =head1 APACHE NOTES
 
 The ACME protocol requires remote access files stored in your website to verify
