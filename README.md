@@ -22,7 +22,7 @@ On RedHat you get them with:
 
 On Ubuntu / Debian with:
 
-    apt-get install perl libssl-dev gcc unzip
+    apt-get install perl libssl-dev gcc unzip make
 
 Get a copy of AcmeFetch from https://github.com/oetiker/AcmeFetch/releases
 and unpack it into your scratch directory and cd there.
