@@ -6,3 +6,4 @@ JSON
 Crypt::OpenSSL::X509
 Net::SSLeay
 IO::Socket::SSL
+Mozilla::CA 
