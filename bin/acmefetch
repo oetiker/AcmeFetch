@@ -48,8 +48,11 @@ sub main()
     ############################################################################
     #   NOTE:
     #        To activate new certificates you need to restart nginx!
+    #        Check it first with
+    #        `nginx -t`
+    #        Then restart it
     #        `/etc/init.d/nginx restart`
-    #        And check its state!
+    #        and finally check its state
     #        `/etc/init.d/nginx status`
     ############################################################################\n"
     }
