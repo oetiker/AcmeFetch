@@ -47,7 +47,7 @@ sub main()
         print "
     ############################################################################
     #   NOTE:
-    #        To activate new certificates you need to restart nginx!
+    #        To activate new certificates you need to restart your webserver. For Nginx try this:
     #        Check it first with
     #        `nginx -t`
     #        Then restart it
