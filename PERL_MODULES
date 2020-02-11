@@ -1,7 +1,6 @@
 Crypt::RSA::Parse@0.043
 Protocol::ACME@1.01
 Data::Processor
-Pod::Usage
 JSON
 Crypt::OpenSSL::X509
 Net::SSLeay
