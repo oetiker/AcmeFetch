@@ -1,4 +1,7 @@
-2017-05-22 11:21:43 +0200  (HEAD -> master, tag: v0.6.1, origin/master)  0.6.1 -- Tobias Oetiker
+2018-07-28 18:13:43 +0200  (HEAD -> master)  fix for openssl 1.1.N (#22) -- Manuel Oetiker
+2017-08-21 11:18:41 +0200   Update README.md (#20) -- Manuel Oetiker
+2017-08-22 16:29:19 +0200  (tag: v0.6.2)  explicitly added Mozilla::CA module -- Tobias Oetiker
+2017-05-22 11:21:43 +0200  (tag: v0.6.1)  0.6.1 -- Tobias Oetiker
 2017-05-22 11:21:03 +0200   do not DIE from bad certs -- Tobias Oetiker
 2017-04-06 09:50:43 +0200   if chain options are omitted write cert and chain to the file specifi… (#18) -- maettu
 2017-04-06 09:52:51 +0200   0.6.0 -- Tobias Oetiker

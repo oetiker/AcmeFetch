@@ -1,5 +1,4 @@
-Crypt::RSA::Parse@0.043
-Protocol::ACME@1.01
+Net::ACME2
 Data::Processor
 Pod::Usage
 JSON

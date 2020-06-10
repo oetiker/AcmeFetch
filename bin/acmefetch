@@ -1,11 +1,11 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 use warnings;
 use strict;
 use lib qw(); # PERL5LIB
 use FindBin;
-use lib "$FindBin::RealBin/../lib";use lib "$FindBin::RealBin/../thirdparty/lib/perl5"; # LIBDIR
+use lib qw(/opt/acmefetch/lib); # LIBDIR
 
-use Protocol::ACME;
+use Net::ACME2::LetsEncrypt;
 use Data::Processor;
 use Data::Processor::ValidatorFactory;
 use JSON;
@@ -38,9 +38,22 @@ sub main()
 
     my $cfg = loadCfg($opt{cfg} // $FindBin::RealBin.'/../etc/acmefetch.cfg');
 
-    $cfg->{GENERAL}{host} = $opt{staging} ? $cfg->{GENERAL}->{ACMEstaging}
-                                            : $cfg->{GENERAL}->{ACMEservice};
     getCertificates($cfg);
+
+    #display disclaimer
+    unless ($opt{checkonly}) {
+        print "
+    ############################################################################
+    #   NOTE:
+    #        To activate new certificates you need to restart your webserver. For Nginx try this:
+    #        Check it first with
+    #        `nginx -t`
+    #        Then restart it
+    #        `/etc/init.d/nginx restart`
+    #        and finally check its state
+    #        `/etc/init.d/nginx status`
+    ############################################################################\n"
+    }
 }
 
 main;
@@ -56,6 +69,12 @@ sub bla {
 
 # get a validator for our configuration file
 
+sub slurp {
+    my $file = shift;
+    open my $fh, '<', $file or die "Opening $file: $!";
+    return join '', <$fh>;
+}
+
 sub getDataProcessor {
     my $vf = Data::Processor::ValidatorFactory->new;
     my $string = $vf->rx('^.*$','expected a string');
@@ -70,20 +89,16 @@ sub getDataProcessor {
                     default => 'openssl',
                     validator => sub {
                         my $bin = shift;
-                        `$bin version 2>&1` =~ /^OpenSSL 1/ or return "Openssl $bin not found";
+                        `$bin version 2>&1` =~ /^OpenSSL 1.0/ or return "Openssl $bin not found";
                         return "";
                     }
                 },
                 ACMEstaging => {
-                    description => 'host name of the ACME staging server to use',
-                    validator => $string,
-                    default => 'acme-staging.api.letsencrypt.org',
+                    description => 'not used anymore',
                     optional => 1,
                 },
                 ACMEservice => {
-                    description => 'host name of the ACME server to use',
-                    default => 'acme-v01.api.letsencrypt.org',
-                    validator => $string,
+                    description => 'not used anymore',
                     optional => 1,
                 },
                 accountKeyPath => {
@@ -101,8 +116,8 @@ sub getDataProcessor {
                     validator => $vf->file('>>','cert file'),
                 },
                 certFormat => {
-                    description => 'PEM or DER output format for the cert',
-                    validator => $vf->rx('^(DER|PEM)','Pick DER or PEM'),
+                    description => 'PEM output format for the cert',
+                    validator => $vf->rx('^(PEM)','Pick PEM'),
                     default => 'PEM',
                 },
                 keyOutput => {
@@ -110,21 +125,21 @@ sub getDataProcessor {
                     validator => $vf->file('>>','key file')
                 },
                 keyFormat => {
-                    description => 'PEM or DER output format for the key',
-                    validator => $vf->rx('^(DER|PEM)','Pick DER or PEM'),
+                    description => 'PEM output format for the key',
+                    validator => $vf->rx('^(PEM)','Pick PEM'),
                     default => 'PEM',
                 },
-                chainOutput => {
-                    description => 'chain output file',
-                    validator => $vf->file('>>','chain file'),
-                    optional => 1,
-                },
-                chainFormat => {
-                    description => 'PEM or DER output format for the chain file',
-                    validator => $vf->rx('^(DER|PEM)','Pick DER or PEM'),
-                    default => 'PEM',
-                    optional => 1,
-                },
+#                chainOutput => {
+#                    description => 'chain output file',
+#                    validator => $vf->file('>>','chain file'),
+#                    optional => 1,
+#                },
+#                chainFormat => {
+#                    description => 'PEM output format for the chain file',
+#                    validator => $vf->rx('^(PEM)','Pick PEM'),
+#                    default => 'PEM',
+#                    optional => 1,
+#                },
                 commonName => {
                     description => 'designate the common name in the certificate. the other sites will be listed as subjectAltName entries.',
                     validator => $string,
@@ -173,8 +188,7 @@ sub getDataProcessor {
 
 sub loadJSONCfg {
     my $file = shift;
-    open my $fh, '<', $file or die "Opening $file: $!";
-    my $json = join '', <$fh>;
+    my $json = slurp($file);
     my $j = JSON->new;
     $j->relaxed(1);
     my $raw_cfg = eval { $j->decode($json) };
@@ -271,7 +285,6 @@ CSRcfg_END
     $csr =~ s/\$C\{(.+?)}/$cert->{$1}/g;
     print $cfgFh $csr;
     $cfgFh->flush();
-    print "$cfgFh";
     my $csrFh = File::Temp->new( UNLINK => 0,SUFFIX => '.csr');
     system $openssl,qw(req -nodes -newkey rsa:2048 -batch -reqexts SAN -outform der),
         -keyout => $cert->{keyOutput}.'.'.$$,
@@ -283,67 +296,85 @@ CSRcfg_END
     return $csrFh->filename();
 }
 
-sub getAccountKey {
+sub getAcme {
     my $cfg = shift;
     my $openssl = $cfg->{GENERAL}{opensslBin};
-    my $key = $cfg->{GENERAL}{accountKeyPath};
-    if (not -e $key or -z $key){
-        system $openssl, 'genrsa', -out => $key, 2048;
+    my $path = $cfg->{GENERAL}{accountKeyPath};
+    if (not -e $path or -z $path){
+        system $openssl, 'genrsa', -out => $path, 2048;
     }
-    return $key;
+    my $key = slurp($path);
+    my $key_id;
+    if (-f $path.'.id'){
+        $key_id = slurp($path.'.id');
+    }
+    my $acme = Net::ACME2::LetsEncrypt->new(
+        environment => $opt{staging} ? 'staging' : 'production',
+        key => $key,
+        $key_id ? (key_id => $key_id):()
+    );
+    if (not $key_id){
+        $acme->create_account(
+            termsOfServiceAgreed => 1,
+        );
+        open my $fh, ">", $path.'.id';
+        print $fh $acme->key_id()
+    }
+    return $acme;
 }
 
 sub getCertificates {
     my $cfg = shift;
     my $openssl = $cfg->{GENERAL}{opensslBin};
+    my $acme = getAcme($cfg);
+    SITE:
     for my $cert (@{$cfg->{CERTS}}){
         bla 'debug',"## $cert->{commonName} ##";
         next if checkCert($cert->{certOutput},$cert->{certFormat},$cert->{SITES}) and not $opt{force};
         next if $opt{checkonly};
-        my $acme = Protocol::ACME->new(
-            host => $cfg->{GENERAL}{host},
-            account_key => {
-                filename => getAccountKey($cfg),
-                format => 'PEM',
-            },
-            openssl => $cfg->{GENERAL}{opensslBin},
-            loglevel => ($opt{debug} ? 'debug': 'error'),
-            debug => $opt{debug},
-        );
-        bla 'debug',"talk to $cfg->{GENERAL}{host}";
-        $acme->directory();
-        $acme->register();
-        $acme->accept_tos();
-        for my $domain (sort keys %{$cert->{SITES}}){
-            bla 'debug',"authorize $domain via $cert->{SITES}{$domain}{challengeConfig}{www_root}";
-            $acme->authz( $domain );
-            $acme->handle_challenge( $cert->{SITES}{$domain}{challengeObj} );
-            $acme->check_challenge();
-            $acme->cleanup_challenge( $cert->{SITES}{$domain}{challengeObj} );
+        my $order = $acme->create_order( identifiers => [
+            map { { type => 'dns', value => $_ } } sort keys %{$cert->{SITES}}
+        ]);
+        my @authUrl = $order->authorizations;
+        my @id = $order->identifiers;
+        bla 'info',"status ".$acme->poll_order($order);
+        for my $i (0..$#authUrl){
+            my $authz = $acme->get_authorization($authUrl[$i]);
+            my @challenges = $authz->challenges();
+            my $ok;
+            my $handler; # when the handler gets destroyed the authorization gets remoived too!
+            for my $challenge ($authz->challenges()){
+               next unless $challenge->type eq 'http-01';
+               my $root = $cert->{SITES}{$id[$i]->{value}}{challengeConfig}{www_root};
+               $handler = $challenge->create_handler($acme,$root);
+               $acme->accept_challenge($challenge);
+               $ok = 1;
+               last;
+            }
+            if (not $ok){
+                bla 'info', "Skipping $cert->{commonName} no challenge found";
+                next SITE;
+            }
+            while (my $status = $acme->poll_authorization($authz)){
+                bla 'debug',"## waiting for authorization on ".$id[$i]->{value}." $status";
+                last if $status eq 'valid';
+                sleep 1;
+            }
         }
-        my $csrFile = makeCsr($cfg,$cert);
+        my $csrFile = makeCsr($cfg,$cert);        
+        my $status = $acme->finalize_order($order,slurp($csrFile));
+        while ($status ne 'valid') {
+          sleep 1;
+          bla 'debug',"## waiting for order status $status";
+          $status = $acme->poll_order($order);
+        }
         eval {
-            my $certData = convertCert($acme->sign( $csrFile ),'DER',$cert->{certFormat});
+            my $certData = $acme->get_certificate_chain($order);
             my $certFile = $cert->{certOutput};
             saveAway($certFile);
             my $fh = IO::File->new( $certFile, "w" )
                 || die "Write $certFile: $!";
             print $fh $certData;
-            
-            # chain file wanted -> write separate chain file, otherwise append to cert file
-            if ($cert->{chainOutput}){
-                my $chainFile = $cert->{chainOutput};
-                $fh->close();
-                saveAway($chainFile);
-                $fh = IO::File->new( $chainFile, "w" )
-                    || die "Write $chainFile: $!";
-            }
-            else {
-                $cert->{chainFormat} = $cert->{certFormat};
-            }
-            my $chainData = convertCert($acme->chain(),'DER',$cert->{chainFormat});
-            print $fh $chainData; 
-            $fh->close();
             saveAway($cert->{keyOutput});
             rename $cert->{keyOutput}.'.'.$$, $cert->{keyOutput};
         };
@@ -482,5 +513,6 @@ S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 
  2016-01-20 to Initial Version
  2016-05-09 to Updated to Protocol::ACME 0.12
+ 2019-07-11 sa Disclaimer added
 
 =cut
