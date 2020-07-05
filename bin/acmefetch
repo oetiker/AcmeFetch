@@ -150,19 +150,6 @@ sub getDataProcessor {
                         '\S+' => {
                             regex => 1,
                             members => {
-                                challengeHandler => {
-                                    description => 'challenge handler module',
-                                    validator => sub {
-                                        my $module = shift;
-                                        eval {
-                                            require 'Protocol/ACME/Challenge/'.$module.'.pm';
-                                        };
-                                        if ($@) {
-                                            return $@;
-                                        }
-                                        return '';
-                                    },
-                                },
                                 challengeConfig => {
                                     description => 'config hash to pass on th the challenge handler',
                                     validator => sub {
@@ -238,16 +225,6 @@ sub loadCfg {
     for my $cert (@{$cfg->{CERTS}}){
         if (not exists $cert->{SITES}{$cert->{commonName}} ){
             die "commonName ($cert->{commonName}) has no matching site entry.\n"
-        }
-
-        for my $site (sort keys %{$cert->{SITES}}){
-            my $sp = $cert->{SITES}{$site};
-            $sp->{challengeObj} = eval {
-                "Protocol::ACME::Challenge::$sp->{challengeHandler}"->new($sp->{challengeConfig});
-            };
-            if ($@){
-                die "Failed to instanciate Challenge handler for $site - $sp->{challengeHandler} ($@)\n";
-            }
         }
     }
     for my $msg ($err->as_array){
