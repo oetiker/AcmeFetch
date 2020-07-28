@@ -3,7 +3,7 @@ use warnings;
 use strict;
 use lib qw(); # PERL5LIB
 use FindBin;
-use lib qw(/opt/acmefetch/lib); # LIBDIR
+use lib $FindBin::RealBin.'/../lib'; # LIBDIR
 
 use Net::ACME2::LetsEncrypt;
 use Data::Processor;
@@ -17,7 +17,7 @@ use Crypt::OpenSSL::X509;
 use FindBin;
 use POSIX qw(strftime);
 
-my $VERSION = q{0.7.1}; # VERSION
+my $VERSION = '0.dev'; # VERSION
 
 my %formatMap = (
     DER => Crypt::OpenSSL::X509::FORMAT_ASN1(),
@@ -36,7 +36,8 @@ sub main()
     if($opt{man})      { pod2usage(-exitstatus => 0, -verbose => 2) }
     if($opt{version})  { print "acmefetch $VERSION\n"; exit(0) }
 
-    my $cfg = loadCfg($opt{cfg} // "/opt/acmefetch/etc/acmefetch.cfg"); # CONFFILE
+    my $cfg = loadCfg($opt{cfg} // $FindBin::RealBin.'/../etc/acmefetch.cfg');
+
 
     getCertificates($cfg);
 
