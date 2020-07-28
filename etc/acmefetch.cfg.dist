@@ -1,7 +1,7 @@
 {
     "GENERAL": {
         "ACMEstaging": "acme-staging.api.letsencrypt.org",
-        "ACMEservice": "acme-v01.api.letsencrypt.org",
+        "ACMEservice": "acme-v02.api.letsencrypt.org",
         "accountKeyPath": "/etc/ssl/private/letsencryptAccountKey.key"
     },
     "CERTS": [
@@ -15,17 +15,13 @@
             "commonName": "my.web.domain",
             "SITES": {
                 "my.web.domain": {
-                    "challengeHandler": "SimpleSSH",
                     "challengeConfig": {
                         "www_root": "/home/myweb/public_html/",
-                        "ssh_host": "myweb@server"
                     }
                 },
                 "your.web.domain": {
-                    "challengeHandler": "SimpleSSH",
                     "challengeConfig": {
                         "www_root": "/home/yourweb/public_html/",
-                        "ssh_host": "yourweb@server"
                     }
                 }
             }
