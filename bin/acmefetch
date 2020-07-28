@@ -17,7 +17,7 @@ use Crypt::OpenSSL::X509;
 use FindBin;
 use POSIX qw(strftime);
 
-my $VERSION = '0.dev'; # VERSION
+my $VERSION = q{0.7.1}; # VERSION
 
 my %formatMap = (
     DER => Crypt::OpenSSL::X509::FORMAT_ASN1(),
@@ -36,7 +36,7 @@ sub main()
     if($opt{man})      { pod2usage(-exitstatus => 0, -verbose => 2) }
     if($opt{version})  { print "acmefetch $VERSION\n"; exit(0) }
 
-    my $cfg = loadCfg($opt{cfg} // $FindBin::RealBin.'/../etc/acmefetch.cfg'); # CONFFILE
+    my $cfg = loadCfg($opt{cfg} // "/opt/acmefetch/etc/acmefetch.cfg"); # CONFFILE
 
     getCertificates($cfg);
 
@@ -332,10 +332,16 @@ sub getCertificates {
                 bla 'info', "Skipping $cert->{commonName} no challenge found";
                 next SITE;
             }
-            while (my $status = $acme->poll_authorization($authz)){
+            my $status;
+            while ($status = $acme->poll_authorization($authz)){
                 bla 'debug',"## waiting for authorization on ".$id[$i]->{value}." $status";
-                last if $status eq 'valid';
+                last if $status ne 'pending';                 
                 sleep 1;
+            }
+            if ($status eq 'invalid'){
+                bla 'info',"Failed to authorise $id[$i]->{value}. Probably something wrong with the configuriatoion?";
+                bla 'info', Dumper($authz);
+                next SITE;
             }
         }
         my $csrFile = makeCsr($cfg,$cert);        
