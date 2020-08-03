@@ -315,8 +315,8 @@ sub getCertificates {
         ]);
         my @authUrl = $order->authorizations;
         my @id = $order->identifiers;
-        bla 'info',"status ".$acme->poll_order($order);
         for my $i (0..$#authUrl){
+            bla 'debug',"## authorizing $authUrl[$i] ##";
             my $authz = $acme->get_authorization($authUrl[$i]);
             my @challenges = $authz->challenges();
             my $ok;
@@ -340,7 +340,7 @@ sub getCertificates {
                 sleep 1;
             }
             if ($status eq 'invalid'){
-                bla 'info',"Failed to authorise $id[$i]->{value}. Probably something wrong with the configuriatoion?";
+                bla 'info',"Failed to authorise $id[$i]->{value}. Probably something wrong with the configuration?";
                 bla 'info', Dumper($authz);
                 next SITE;
             }
