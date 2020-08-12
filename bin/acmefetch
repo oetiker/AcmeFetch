@@ -313,17 +313,23 @@ sub getCertificates {
         my $order = $acme->create_order( identifiers => [
             map { { type => 'dns', value => $_ } } sort keys %{$cert->{SITES}}
         ]);
-        my @authUrl = $order->authorizations;
-        my @id = $order->identifiers;
-        for my $i (0..$#authUrl){
-            bla 'debug',"## authorizing $authUrl[$i] ##";
-            my $authz = $acme->get_authorization($authUrl[$i]);
+        #my @authUrl = $order->authorizations;
+ #      my @id = $order->identifiers;
+        #bla 'debug','auth'.Dumper(\@authUrl);
+        #bla 'debug','id'.Dumper(\@id);
+        URL:
+        for my $url ($order->authorizations){
+            my $authz = $acme->get_authorization($url);
+            my $site = $authz->identifier->{value};
+            bla 'debug','## checking '.$site.":\t".$authz->status;
+            next if $authz->status eq 'valid';
+            # bla 'debug', Dumper $authz;
             my @challenges = $authz->challenges();
             my $ok;
             my $handler; # when the handler gets destroyed the authorization gets remoived too!
-            for my $challenge ($authz->challenges()){
+            for my $challenge (@challenges){
                next unless $challenge->type eq 'http-01';
-               my $root = $cert->{SITES}{$id[$i]->{value}}{challengeConfig}{www_root};
+               my $root = $cert->{SITES}{$site}{challengeConfig}{www_root};
                $handler = $challenge->create_handler($acme,$root);
                $acme->accept_challenge($challenge);
                $ok = 1;
@@ -335,12 +341,12 @@ sub getCertificates {
             }
             my $status;
             while ($status = $acme->poll_authorization($authz)){
-                bla 'debug',"## waiting for authorization on ".$id[$i]->{value}." $status";
+                bla 'debug',"## waiting for authorization on $site - $status";
                 last if $status ne 'pending';                 
                 sleep 1;
             }
             if ($status eq 'invalid'){
-                bla 'info',"Failed to authorise $id[$i]->{value}. Probably something wrong with the configuration?";
+                bla 'info',"Failed to authorise $site. Probably something wrong with the configuration?";
                 bla 'info', Dumper($authz);
                 next SITE;
             }
