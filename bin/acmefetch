@@ -90,7 +90,7 @@ sub getDataProcessor {
                     default => 'openssl',
                     validator => sub {
                         my $bin = shift;
-                        `$bin version 2>&1` =~ /^OpenSSL 1/ or return "Openssl $bin not found";
+                        `$bin version 2>&1` =~ /^OpenSSL [13]/ or return "Openssl $bin not found";
                         return "";
                     }
                 },
