@@ -1,3 +1,8 @@
+2022-11-14 09:54:14 +0100  (HEAD -> 0.8.0, origin/0.8.0)  get ready for 0.8.0 -- Tobias Oetiker
+2022-11-11 18:05:13 +0000   add support for openssl 3 -- Dominik Hassler
+2020-08-15 15:41:00 +0200   chainOutput and chainFormat not supported anymore -- Dirk Deimeke
+2020-09-16 15:25:25 +0000   restore missing '# CONFFILE' tag -- Dominik Hassler
+2020-08-12 09:42:25 +0200  (origin/r/0.7.5, r/0.7.5)  fix challenge management -- Tobias Oetiker
 2020-08-03 08:47:41 +0200  (origin/v0.7.2, v0.7.2)  better logging -- Tobias Oetiker
 2020-07-28 16:35:54 +0200   fix version numbering -- Tobias Oetiker
 2020-07-28 11:27:08 +0200   * remove v1 leftovers * improve error handling -- Tobias Oetiker

@@ -45,5 +45,3 @@ install-exec-hook:
 	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^use .*# LIBDIR}{use lib qw($(libdir)); # LIBDIR}' $(BIN)
 	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
 	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's|^\s+my .*# CONFFILE|    my \$$cfg = loadCfg(\$$opt{cfg} // "$(sysconfdir)/$(MJ_SCRIPT).cfg"); # CONFFILE|' $(BIN)
-	mkdir -p $(DESTDIR)$(libdir)
-	[ ! -d $(THIRDPARTY_DIR)/lib/perl5 ] || cp -fr $(THIRDPARTY_DIR)/lib/perl5/* $(DESTDIR)$(libdir)
