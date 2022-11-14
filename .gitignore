@@ -1,4 +1,6 @@
 Makefile
+*.in
+.tool-versions
 *~
 .DS_Store
 *.rej
@@ -9,7 +11,9 @@ aclocal.m4
 autom4te.cache
 config.log
 config.status
+configure
 thirdparty
 README
 !thirdparty/Makefile.am
-!thirdparty/Makefile.in
+conftools
+acmefetch-*/

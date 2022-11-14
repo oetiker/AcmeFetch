@@ -1,7 +1,0 @@
-Net::ACME2
-Data::Processor
-JSON
-Crypt::OpenSSL::X509
-Net::SSLeay
-IO::Socket::SSL
-Mozilla::CA 
