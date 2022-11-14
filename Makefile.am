@@ -15,7 +15,7 @@ THIRDPARTY_DIR := $(shell pwd)/thirdparty
 MAN = man/$(MJ_SCRIPT).1
 POD = doc/$(MJ_SCRIPT).pod
 
-EXTRA_DIST = VERSION PERL_MODULES COPYRIGHT LICENSE CHANGES AUTHORS bootstrap README.md $(BIN) $(POD)
+EXTRA_DIST = VERSION cpanfile COPYRIGHT LICENSE CHANGES AUTHORS bootstrap README.md $(BIN) $(POD)
 
 CHANGES: VERSION
 	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
@@ -24,9 +24,6 @@ YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 
 datadir = $(prefix)
-
-README: README.md
-	cp README.md README
 
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)

@@ -1,13 +1,11 @@
 AcmeFetch
 =========
 
-[![Build Status](https://travis-ci.org/oetiker/AcmeFetch.svg?branch=master)](https://travis-ci.org/oetiker/AcmeFetch)
-
 Version: #VERSION#
 
 Date: #DATE#
 
-AcmeFetch is a thin wrapper arount he ACME::Protocol library to fetch and maintain
+AcmeFetch is a thin wrapper arount the Net::ACME2 library to fetch and maintain
 ssl certificates using the the services of Let's Encrypt!
 
 Setup
