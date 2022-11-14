@@ -1,4 +1,6 @@
-2022-11-14 09:54:14 +0100  (HEAD -> 0.8.0, origin/0.8.0)  get ready for 0.8.0 -- Tobias Oetiker
+2022-11-14 11:49:44 +0100  (HEAD -> 0.8.1)  release 0.8.1 -- Tobias Oetiker
+2022-11-14 11:49:03 +0100  (origin/0.8.1)  fix install flow -- Tobias Oetiker
+2022-11-14 09:54:14 +0100  (origin/0.8.0, 0.8.0)  get ready for 0.8.0 -- Tobias Oetiker
 2022-11-11 18:05:13 +0000   add support for openssl 3 -- Dominik Hassler
 2020-08-15 15:41:00 +0200   chainOutput and chainFormat not supported anymore -- Dirk Deimeke
 2020-09-16 15:25:25 +0000   restore missing '# CONFFILE' tag -- Dominik Hassler
